@@ -1,0 +1,24 @@
+//模板代码
+<html>
+<head></head>
+<body>
+<P><a href="{:U('Index/allExp')}" >导出数据并生成excel</a></P><br/>
+
+<form action="{:U('/Excel/importExp')}" method="post" enctype="multipart/form-data" >
+	<div>
+		<label>Excel文件地址</label>
+		<div>
+			<input type="text" id="ExcelURL" name="ExcelURL" >
+		</div>
+		<div>
+			<input id="doc-form-file" type="file" name="excel"  multiple>
+		</div>
+	</div>
+	<div>
+		<div>
+			<button type="submit">导入</button>
+		</div>
+	</div>
+</form>
+</body>
+</html>

@@ -35,6 +35,9 @@ class UserController extends AdminController {
         $this->meta_title = '用户信息';
         $this->display();
     }
+	public function imgupload(){
+		$this->display();
+	}
 
     /**
      * 修改昵称初始化
