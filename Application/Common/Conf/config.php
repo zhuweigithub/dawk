@@ -17,7 +17,7 @@ return array(
     'DEFAULT_MODULE'     => 'Home',
     'MODULE_DENY_LIST'   => array('Common','User','Admin'),
     //'MODULE_ALLOW_LIST'  => array('Home','Admin'),
-
+	'LOAD_EXT_CONFIG'	=>'library,tags',
     /* 系统数据加密设置 */
     'DATA_AUTH_KEY' => 'qoyrc,^/s+Tpj_:"ZBt%R|xv*FGbDJi8f7L2HKuQ', //默认数据加密KEY
 

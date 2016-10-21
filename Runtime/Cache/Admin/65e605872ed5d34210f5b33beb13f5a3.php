@@ -96,7 +96,7 @@
             <button class="btn ajax-post" url="<?php echo U('changeStatus?method=forbidUser');?>" target-form="ids">禁 用</button>
             <button class="btn ajax-post confirm" url="<?php echo U('changeStatus?method=deleteUser');?>" target-form="ids">删 除</button>
         </div>
-		
+
         <!-- 高级搜索 -->
 		<div class="search-form fr cf">
 			<div class="sleft">

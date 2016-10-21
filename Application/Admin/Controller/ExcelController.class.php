@@ -5,6 +5,11 @@ class ExcelController extends AdminController
 
 	public function importExp()
 	{
+		$tableName = $_POST['table_name'];
+		$tableName = C("db_table")[$tableName];
+		if (empty($tableName)) {
+			$this->error("请选择上传的库");
+		}
 		header("Content-type: text/html;charset=utf-8"); //设置页面内容是html编码格式是utf-8
 		if (!empty($_FILES['excel']['name'])) {
 			$uploads          = "Public/Uploads/";
@@ -21,7 +26,7 @@ class ExcelController extends AdminController
 				$base_path = str_replace('\\', '/', realpath(dirname(__FILE__) . '/'));
 				$base_path = str_replace('/Application/Admin/Controller', '', $base_path) . '/';
 				$path      = $base_path . $uploads . $info['savepath'] . $info['savename'];
-				$this->importExcel($path);
+				$this->importExcel($tableName, $path);
 
 			}
 		} else {
@@ -29,7 +34,7 @@ class ExcelController extends AdminController
 		}
 	}
 
-	public function importExcel($filename)
+	public function importExcel($tableName, $filename)
 	{
 		error_reporting(E_ALL);
 		date_default_timezone_set('Asia/ShangHai');
@@ -40,14 +45,40 @@ class ExcelController extends AdminController
 		$highestRow    = $sheet->getHighestRow(); // 取得总行数
 		$highestColumm = $sheet->getHighestColumn(); // 取得总列数
 
-		/** 循环读取每个单元格的数据 */
-		for ($row = 1; $row <= $highestRow; $row++) { //行数是以第1行开始
+		for ($row = 1; $row <= $highestRow; $row++) {
+			//数据第一列一般是表头
+			if ($row == 1) {
+				continue;
+			}
 			for ($column = 'A'; $column <= $highestColumm; $column++) { //列数是以A列开始
 				$dataset[] = $sheet->getCell($column . $row)->getValue();
-				echo $column . $row . ":" . $sheet->getCell($column . $row)->getValue() . "<br />";
-
-				//保存成功了删除excel文件，否则会冗余
 			}
+			$this->saveData($tableName, $dataset ,$filename);
+			unset($dataset);
+		}
+		//上传之后删除掉源excel，以免数据冗余
+		@unlink($filename);
+		$this->success("数据上传成功！");
+	}
+
+	private function saveData($tableName, $param ,$filename)
+	{
+		$db = M($tableName);
+		switch ($tableName) {
+			case 'in_out_org':
+				$arr = array(
+					"in_out_org" => $param[0],
+					"area_name"  => $param[1],
+					"org_code"   => $param[2]
+				);
+				break;
+
+		}
+		if ($arr) {
+			$db->add($arr);
+		} else {
+			@unlink($filename);
+			$this->error("发生未知错误！");
 		}
 	}
 
