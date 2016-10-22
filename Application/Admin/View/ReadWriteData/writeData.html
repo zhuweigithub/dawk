@@ -1,0 +1,40 @@
+<extend name="Public/base"/>
+
+<block name="body">
+	<!-- 标题栏 -->
+	<div class="main-title">
+		<h2>数据导入</h2>
+	</div>
+	<!-- /标题栏 -->
+
+	<!-- 应用列表 -->
+	<P><a href="{:U('Index/ReadData')}" >数据一览</a></P><br/>
+
+	<form action="{:U('/Excel/importExp')}" method="post" enctype="multipart/form-data"  class="form-horizontal">
+			<div class="form-item">
+				<label class="item-label">请选择库<span class="check-tips">（注意：选错库会导致数据导入失败）</span></label>
+				<div class="controls">
+					<select name="table_name">
+						<volist name="result" id="vo">
+							<option value="{$key}">{$vo}</option>
+						</volist>
+					</select>
+				</div>
+			</div>
+		<div class="form-item">
+			<label class="item-label">选择Excel文件<span class="check-tips">（注意：Excel必须严格按照模版规则）</span></label>
+			<div class="controls">
+
+				<input id="doc-form-file" type="file" name="excel"  multiple>
+			</div>
+		</div>
+		<div class="form-item">
+			<label class="item-label"></label>
+			<div class="controls">
+				<button type="submit" class="btn submit-btn" target-form="form-horizontal">上 传</button>
+				<button class="btn btn-return" onclick="javascript:history.back(-1);return false;">返 回</button>
+			</div>
+		</div>
+	</form>
+	<!-- /应用列表 -->
+</block>
