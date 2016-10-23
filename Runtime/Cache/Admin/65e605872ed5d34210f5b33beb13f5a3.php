@@ -95,6 +95,12 @@
             <button class="btn ajax-post" url="<?php echo U('changeStatus?method=resumeUser');?>" target-form="ids">启 用</button>
             <button class="btn ajax-post" url="<?php echo U('changeStatus?method=forbidUser');?>" target-form="ids">禁 用</button>
             <button class="btn ajax-post confirm" url="<?php echo U('changeStatus?method=deleteUser');?>" target-form="ids">删 除</button>
+            <label class="item-label">只显示：<span class="check-tips"></span></label>
+
+            <select id="task_stuts" name="task_stuts" style="width:120px" onchange="income()">
+                <option value="0" <?php if($stuts==0) echo 'selected'; ?>>所有区域...</option>
+                <?php if(is_array($department)): $i = 0; $__LIST__ = $department;if( count($__LIST__)==0 ) : echo "" ;else: foreach($__LIST__ as $key=>$vo): $mod = ($i % 2 );++$i;?><option value="<?php echo ($vo["id"]); ?>"  <?php if($stuts==$vo['id'])echo 'selected'; else echo ''; ?>><?php echo ($vo["title"]); ?></option><?php endforeach; endif; else: echo "" ;endif; ?>
+            </select>
         </div>
 
         <!-- 高级搜索 -->
@@ -105,6 +111,11 @@
 			</div>
 		</div>
     </div>
+    <div style="margin-top:0.5rem;width: 100%;height: 3.5rem;background-color: #fffc59;border: 1px dotted #1115ff">
+        <b>注意事项：</b>1.表格最上面浅绿色是各区域的管理员。<br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        2.变更区域管理员点击操作栏的授权去更改。
+    </div>
     <!-- 数据列表 -->
     <div class="data-table table-striped">
 	<table class="">
@@ -113,23 +124,25 @@
 		<th class="row-selected row-selected"><input class="check-all" type="checkbox"/></th>
 		<th class="">UID</th>
 		<th class="">昵称</th>
-		<th class="">积分</th>
-		<th class="">登录次数</th>
-		<th class="">最后登录时间</th>
-		<th class="">最后登录IP</th>
+        <th class="">性别</th>
+        <th class="">手机号码</th>
+        <th class="">所属区域</th>
+
+		<th class="">注册时间</th>
 		<th class="">状态</th>
 		<th class="">操作</th>
 		</tr>
     </thead>
     <tbody>
-		<?php if(!empty($_list)): if(is_array($_list)): $i = 0; $__LIST__ = $_list;if( count($__LIST__)==0 ) : echo "" ;else: foreach($__LIST__ as $key=>$vo): $mod = ($i % 2 );++$i;?><tr>
+		<?php if(!empty($_list)): if(is_array($_list)): $i = 0; $__LIST__ = $_list;if( count($__LIST__)==0 ) : echo "" ;else: foreach($__LIST__ as $key=>$vo): $mod = ($i % 2 );++$i;?><tr <?php if($vo['position'] == 1) echo 'style="background-color:rgba(206, 255, 89, 0.36)"'; ?>  >
             <td><input class="ids" type="checkbox" name="id[]" value="<?php echo ($vo["uid"]); ?>" /></td>
 			<td><?php echo ($vo["uid"]); ?> </td>
-			<td><?php echo ($vo["nickname"]); ?></td>
-			<td><?php echo ($vo["score"]); ?></td>
-			<td><?php echo ($vo["login"]); ?></td>
-			<td><span><?php echo (time_format($vo["last_login_time"])); ?></span></td>
-			<td><span><?php echo long2ip($vo['last_login_ip']);?></span></td>
+			<td><a href="<?php echo U('User/recomposeMember?uid='.$vo['uid']);?>"><?php echo ($vo["nickname"]); ?></a></td>
+            <td><?php switch($vo["sex"]): case "1": ?>男<?php break;?>
+                <?php case "2": ?>女<?php break; endswitch;?></td>
+            <td><?php echo ($vo["phone"]); ?></td>
+			<td><?php echo ($vo["area"]); ?></td>
+			<td><span><?php echo (time_format($vo["reg_time"])); ?></span></td>
 			<td><?php echo ($vo["status_text"]); ?></td>
 			<td><?php if(($vo["status"]) == "1"): ?><a href="<?php echo U('User/changeStatus?method=forbidUser&id='.$vo['uid']);?>" class="ajax-get">禁用</a>
 				<?php else: ?>
@@ -141,7 +154,16 @@
 		<?php else: ?>
 		<td colspan="9" class="text-center"> aOh! 暂时还没有内容! </td><?php endif; ?>
 	</tbody>
+
     </table>
+        <div>
+           <label style="font-weight: bold;color: rgba(13, 9, 10, 0.42);font-size: 14px">变更到：</label>
+            <select  id="group_ids" style="width:120px" >
+                <option value="0">请选择区域</option>
+                <?php if(is_array($department)): $i = 0; $__LIST__ = $department;if( count($__LIST__)==0 ) : echo "" ;else: foreach($__LIST__ as $key=>$vo): $mod = ($i % 2 );++$i;?><option value="<?php echo ($vo["id"]); ?>"><?php echo ($vo["title"]); ?></option><?php endforeach; endif; else: echo "" ;endif; ?>
+            </select>
+            <button class="btn" style="background-color: red !important;" onclick="moveMember()">确 定</button>
+        </div>
 	</div>
     <div class="page">
         <?php echo ($_page); ?>
@@ -243,6 +265,44 @@
 	<script src="/Public/static/thinkbox/jquery.thinkbox.js"></script>
 
 	<script type="text/javascript">
+        function moveMember(){
+            var selectGroup = $('#group_ids option:selected') .val();
+            if( selectGroup == 0 ){
+                alert("请选择分组");return;
+            }
+            var ids = '';
+            $(".ids").each(function(){
+
+                if(this.checked == true ){
+                   ids +=  $(this).val() + ',';
+                }
+            });
+            if(ids == ""){
+               alert("请选择成员");return;
+            }
+            $.post("/admin.php/User/addGroupMember",{group:selectGroup,ids:ids},function(data){
+                data = eval("(" + data + ")");
+                if( data == ""){
+                    window.location.reload();
+                }else{
+                    alert("会员编号：" + data + "修改失败，请检查是否为地区管理！");
+                    window.location.reload();
+                }
+
+            });
+
+        }
+
+        function income(){
+            var url=$("#search").attr('url');
+            var stuts =$("#task_stuts  option:selected").val();
+            if( url.indexOf('?')>0 ){
+                url+='&stuts='+stuts;
+            }else{
+                url+='?stuts='+stuts;
+            }
+            window.location.href = url;
+        }
 	//搜索功能
 	$("#search").click(function(){
 		var url = $(this).attr('url');

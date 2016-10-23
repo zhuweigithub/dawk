@@ -1,15 +1,15 @@
 <extend name="Public/base" />
 <block name="body">
 	<div class="main-title">
-        <h2>用户组授权</h2>
+        <h2>地域管理员授权</h2>
 	</div>
 
     <div id="auth_groups">
         <form class="form-horizontal" action="{:U('addToGroup')}" method="post" enctype="application/x-www-form-urlencoded" >
-			<label class="item-label">{$nickname} 所属的用户组列表</label>
-            <volist name="auth_groups" id="vo">
+			<label class="item-label">{$nickname} 所属区域</label>
+            <volist name="result" id="vo">
                 <label class="checkbox">
-                    <input class="auth_groups" type="checkbox" name="group_id[]" value="{$vo.id}">{$vo.title}
+                    <input class="auth_groups" type="radio" name="group_id[]" value="{$vo.id}">{$vo.title}
                 </label>
             </volist>
             <input type="hidden" name="uid" value="{:I('uid')}">

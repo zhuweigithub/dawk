@@ -86,14 +86,14 @@
 
             
 	<div class="main-title">
-        <h2>用户组授权</h2>
+        <h2>地域管理员授权</h2>
 	</div>
 
     <div id="auth_groups">
         <form class="form-horizontal" action="<?php echo U('addToGroup');?>" method="post" enctype="application/x-www-form-urlencoded" >
-			<label class="item-label"><?php echo ($nickname); ?> 所属的用户组列表</label>
-            <?php if(is_array($auth_groups)): $i = 0; $__LIST__ = $auth_groups;if( count($__LIST__)==0 ) : echo "" ;else: foreach($__LIST__ as $key=>$vo): $mod = ($i % 2 );++$i;?><label class="checkbox">
-                    <input class="auth_groups" type="checkbox" name="group_id[]" value="<?php echo ($vo["id"]); ?>"><?php echo ($vo["title"]); ?>
+			<label class="item-label"><?php echo ($nickname); ?> 所属区域</label>
+            <?php if(is_array($result)): $i = 0; $__LIST__ = $result;if( count($__LIST__)==0 ) : echo "" ;else: foreach($__LIST__ as $key=>$vo): $mod = ($i % 2 );++$i;?><label class="checkbox">
+                    <input class="auth_groups" type="radio" name="group_id[]" value="<?php echo ($vo["id"]); ?>"><?php echo ($vo["title"]); ?>
                 </label><?php endforeach; endif; else: echo "" ;endif; ?>
             <input type="hidden" name="uid" value="<?php echo I('uid');?>">
             <input type="hidden" name="batch" value="true">

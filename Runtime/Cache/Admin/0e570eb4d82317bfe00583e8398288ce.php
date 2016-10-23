@@ -87,7 +87,7 @@
             
 	<!-- 标题栏 -->
 	<div class="main-title">
-		<h2>权限管理</h2>
+		<h2>地域管理</h2>
 	</div>
 
     <div class="tools auth-botton">
@@ -104,8 +104,6 @@
 		<th class="row-selected row-selected"><input class="check-all" type="checkbox"/></th>
 		<th class="">用户组</th>
 		<th class="">描述</th>
-
-		<th class="">授权</th>
 		<th class="">状态</th>
 		<th class="">操作</th>
 		</tr>
@@ -117,10 +115,7 @@
 			<td><span><?php echo mb_strimwidth($vo['description'],0,60,"...","utf-8");?></span></td>
 
 
-			<td><a href="<?php echo U('AuthManager/access?group_name='.$vo['title'].'&group_id='.$vo['id']);?>" >访问授权</a>
-			<a href="<?php echo U('AuthManager/category?group_name='.$vo['title'].'&group_id='.$vo['id']);?>" >分类授权</a>
-			<a href="<?php echo U('AuthManager/user?group_name='.$vo['title'].'&group_id='.$vo['id']);?>" >成员授权</a>
-			</td>
+
 			<td><?php echo ($vo["status_text"]); ?></td>
 			<td><?php if(($vo["status"]) == "1"): ?><a href="<?php echo U('AuthManager/changeStatus?method=forbidGroup&id='.$vo['id']);?>" class="ajax-get">禁用</a>
 				<?php else: ?>

@@ -206,16 +206,14 @@ class AuthManagerController extends AdminController{
         if(empty($group_id)){
             $this->error('参数错误');
         }
-
+        $param['area'] = $group_id;
+        $param['status'] = 1;
+        $param['position'] = 2;
         $auth_group = M('AuthGroup')->where( array('status'=>array('egt','0'),'module'=>'admin','type'=>AuthGroupModel::TYPE_ADMIN) )
-            ->getfield('id,id,title,rules');
-        $prefix   = C('DB_PREFIX');
-        $l_table  = $prefix.(AuthGroupModel::MEMBER);
-        $r_table  = $prefix.(AuthGroupModel::AUTH_GROUP_ACCESS);
-        $model    = M()->table( $l_table.' m' )->join ( $r_table.' a ON m.uid=a.uid' );
-        $_REQUEST = array();
-        $list = $this->lists($model,array('a.group_id'=>$group_id,'m.status'=>array('egt',0)),'m.uid asc','m.uid,m.nickname,m.last_login_time,m.last_login_ip,m.status');
-        int_to_string($list);
+            ->getfield('id,id,title');
+        $list = M("Member")->where($param)->select();
+
+         int_to_string($list);
         $this->assign( '_list',     $list );
         $this->assign('auth_group', $auth_group);
         $this->assign('this_group', $auth_group[(int)$_GET['group_id']]);
@@ -251,16 +249,10 @@ class AuthManagerController extends AdminController{
      */
     public function group(){
         $uid            =   I('uid');
-        $auth_groups    =   D('AuthGroup')->getGroups();
-        $user_groups    =   AuthGroupModel::getUserGroup($uid);
-        $ids = array();
-        foreach ($user_groups as $value){
-            $ids[]      =   $value['group_id'];
-        }
-        $nickname       =   D('Member')->getNickName($uid);
+        $result = M("Auth_group")->where("status = 1")->select();
+        $nickname   =   D('Member')->getNickName($uid);
+        $this->assign("result" , $result);
         $this->assign('nickname',   $nickname);
-        $this->assign('auth_groups',$auth_groups);
-        $this->assign('user_groups',implode(',',$ids));
         $this->meta_title = '用户组授权';
         $this->display();
     }
@@ -275,23 +267,35 @@ class AuthManagerController extends AdminController{
         if( empty($uid) ){
             $this->error('参数有误');
         }
-        $AuthGroup = D('AuthGroup');
+        $Member = M('Member');
         if(is_numeric($uid)){
             if ( is_administrator($uid) ) {
                 $this->error('该用户为超级管理员');
             }
-            if( !M('Member')->where(array('uid'=>$uid))->find() ){
+            if( !$Member->where(array('uid'=>$uid))->find() ){
                 $this->error('用户不存在');
             }
         }
+        $isManage = $Member->where("position = 1 and area = ".$gid[0])->find();
 
-        if( $gid && !$AuthGroup->checkGroupId($gid)){
-            $this->error($AuthGroup->error);
+        if(!empty($isManage)){
+            $arrS = array(
+                "uid" => $isManage['uid'],
+                "position" => 2
+            );
+            $Member->save($arrS);
         }
-        if ( $AuthGroup->addToGroup($uid,$gid) ){
-            $this->success('操作成功');
+          $arr = array(
+              "uid" => $uid,
+              "area" => $gid[0],
+              "position" => 1
+
+          );
+
+        if ( $Member->save($arr) ){
+            $this->success('操作成功','/admin.php/User/index');
         }else{
-            $this->error($AuthGroup->getError());
+            $this->error("授权失败，请稍候重试！");
         }
     }
 
@@ -312,7 +316,12 @@ class AuthManagerController extends AdminController{
         if( !$AuthGroup->find($gid)){
             $this->error('用户组不存在');
         }
-        if ( $AuthGroup->removeFromGroup($uid,$gid) ){
+        $arr = array(
+            "uid" =>$uid,
+            "area"=> "",
+            "position" =>2
+        );
+        if (  M("Member")->where("uid = " .$uid)->save($arr) ){
             $this->success('操作成功');
         }else{
             $this->error('操作失败');

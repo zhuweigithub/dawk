@@ -28,9 +28,26 @@ class UserController extends AdminController {
         }else{
             $map['nickname']    =   array('like', '%'.(string)$nickname.'%');
         }
+        if(!empty($_GET['stuts'])){
+            $map['area']=array('EQ',$_GET['stuts']);
+        }
+        $list   = $this->lists('Member', $map ,"position");
 
-        $list   = $this->lists('Member', $map);
+        $result = M("Auth_group")->where("status = 1")->select();
+        foreach($list as $key=>$val){
+            if($list[$key]['nickname']=='zw'){
+                unset($list[$key]);
+            }
+            foreach($result as $i=>$j){
+                if($list[$key]['area']==$result[$i]['id']){
+                   $list[$key]['area']=$result[$i]['title'];
+                }
+
+            }
+        }
         int_to_string($list);
+        $this->assign('stuts',$_GET['stuts']);
+        $this->assign('department',$result);
         $this->assign('_list', $list);
         $this->meta_title = '用户信息';
         $this->display();
@@ -202,33 +219,150 @@ class UserController extends AdminController {
                 $this->error('参数非法');
         }
     }
+    public function addGroupMember(){
+       // group:selectGroup,ids:ids
+        $group_id = I("post.group");
+        $ids      = I("post.ids");
+        if(empty($group_id)){
+            $this->error("分组不能为空！");
+        }
+        if(empty($ids)){
+            $this->error("选择会员不能为空！");
+        }
+        $idsArr = explode(",",$ids);
+        unset($idsArr[count($idsArr)-1]);
+        if(!M("Auth_group")->where("id=".$group_id)->find()){
+            $this->error("分组不存在！");
+        }
+        $member = M("Member");
+        $noId = [];
+        foreach( $idsArr as $key=>$val ){
+           $result = $member->where("uid=". $val)->find();
+            if($result['position'] == 1){
+                $noId [] = $val;
+            }
+            $arr = array(
+                "uid" =>$val,
+                "area"=>$group_id
+            );
+            $member->save($arr);
+        }
+        echo json_encode($noId);
+
+    }
 
     public function add($username = '', $password = '', $repassword = '', $email = ''){
         if(IS_POST){
+            $username = I("post.username");
+            $phone = I("post.phone");
+            $sex = I("post.sex");
+            $department = I("post.department");
+            $password = I("post.password");
+            $repassword = I("post.repassword");
+            $email = I("post.email");
+
+            if($department==""){
+                $this->error('请选择或输入部门名称！');
+            }
             /* 检测密码 */
             if($password != $repassword){
                 $this->error('密码和重复密码不一致！');
             }
+            if($phone == ""){
+                $this->error('手机号码不能为空！');
+            }
+            $params['nickname']=$username;
+            $params['status']=1;
+            $member = M('member')->where($params)->find();
+            if($member){
+                $this->error('用户昵称已存在，不能重复注册！');
+            }
+            $param['phone']=$phone;
+            $param['status']=1;
 
+            $member = M('member')->where($param)->find();
+            if($member){
+                $this->error('手机号码已存在，不能重复注册！');
+            }
             /* 调用注册接口注册用户 */
             $User   =   new UserApi;
             $uid    =   $User->register($username, $password, $email);
             if(0 < $uid){ //注册成功
-                $user = array('uid' => $uid, 'nickname' => $username, 'status' => 1);
-                if(!M('Member')->add($user)){
+                $user = array(
+                    'uid'           => $uid,
+                    'nickname'     => $username,
+                    'status'        => 1,
+                    'email'         => $email,
+                    'phone'         => $phone,
+                    'area'   => $department,
+                    'reg_time'     =>time(),
+                    'sex'           => $sex
+                );
+                $uid = M('Member')->add($user);
+
+                if(!$uid){
                     $this->error('用户添加失败！');
                 } else {
                     $this->success('用户添加成功！',U('index'));
                 }
-            } else { //注册失败，显示错误信息
-                $this->error($this->showRegError($uid));
             }
         } else {
             $this->meta_title = '新增用户';
+            $result = M("Auth_group")->where("status = 1")->select();
+            $this->assign("result" , $result);
             $this->display();
         }
     }
 
+    /**  修改会员信息
+     */
+    public function recomposeMember(){
+        $uid = $_GET['uid'];
+        if(IS_POST){
+            $id       = I("post.uid");
+            $username = I("post.username");
+            $phone = I("post.phone");
+            $sex = I("post.sex");
+            $department = I("post.department");
+            $password = I("post.password");
+            $repassword = I("post.repassword");
+            $email = I("post.email");
+
+
+            /* 检测密码 */
+            if($password != $repassword){
+                $this->error('密码和重复密码不一致！');
+            }
+            if($phone == ""){
+                $this->error('手机号码不能为空！');
+            }
+            $user = array(
+                'uid'           => $id,
+                'nickname'     => $username,
+                'status'        => 1,
+                'email'         => $email,
+                'phone'         => $phone,
+                'area'   => $department,
+                'update_time'     =>time(),
+                'sex'           => $sex
+            );
+            $uid = M('Member')->save($user);
+
+            if(!$uid){
+                $this->error('用户修改失败！');
+            } else {
+                $this->success('用户修改成功！',U('index'));
+            }
+
+        } else {
+            $this->meta_title = '修改会员信息';
+            $result = M("Member")->where("uid =" . $uid)->find();
+            $department = M("Auth_group")->where("status = 1")->select();
+            $this->assign("departments",$department);
+            $this->assign("result" , $result);
+            $this->display();
+        }
+    }
     /**
      * 获取用户注册错误信息
      * @param  integer $code 错误编码
