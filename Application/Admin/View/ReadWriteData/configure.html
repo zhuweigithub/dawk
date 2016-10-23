@@ -1,62 +1,120 @@
 <extend name="Public/base"/>
 
 <block name="body">
-	<div class="main-title">
-		<h2>网站设置</h2>
-	</div>
-	<div class="tab-wrap">
-		<ul class="tab-nav nav">
-				<li class="current"><a href="{:U('?id='.$key)}">{$group}配置</a></li>
-				<li ><a href="{:U('?id='.$key)}">{$group}配置</a></li>
-		</ul>
-		<div class="tab-content">
-			<form action="{:U('save')}" method="post" class="form-horizontal">
-				<volist name="list" id="config">
-					<div class="form-item">
-						<label class="item-label">{$config.title}<span class="check-tips">（{$config.remark}）</span> </label>
-						<div class="controls">
-							<switch name="config.type">
-								<case value="0">
-									<input type="text" class="text input-small" name="config[{$config.name}]" value="{$config.value}">
-								</case>
-								<case value="1">
-									<input type="text" class="text input-large" name="config[{$config.name}]" value="{$config.value}">
-								</case>
-								<case value="2">
-									<label class="textarea input-large">
-										<textarea name="config[{$config.name}]">{$config.value}</textarea>
-									</label>
-								</case>
-								<case value="3">
-									<label class="textarea input-large">
-										<textarea name="config[{$config.name}]">{$config.value}</textarea>
-									</label>
-								</case>
-								<case value="4">
-									<select name="config[{$config.name}]">
-										<volist name=":parse_config_attr($config['extra'])" id="vo">
-											<option value="{$key}" <eq name="config.value" value="$key">selected</eq>>{$vo}</option>
-										</volist>
-									</select>
-								</case>
-							</switch>
+    <div class="main-title">
+        <h2>邮费收费标准设置</h2>
+    </div>
+    <div class="cf">
+        <div class="fl">
+            <a class="btn" href="{:U('addOrUpdateProvince')}">添加省</a>
 
-						</div>
-					</div>
-				</volist>
-				<div class="form-item">
-					<label class="item-label"></label>
-					<div class="controls">
-						<empty name="list"><button type="submit" disabled class="btn submit-btn disabled" target-form="form-horizontal">确 定</button><else/><button type="submit" class="btn submit-btn ajax-post" target-form="form-horizontal">确 定</button></empty>
-
-						<button class="btn btn-return" onclick="javascript:history.back(-1);return false;">返 回</button>
-					</div>
-				</div>
-			</form>
-		</div>
-	</div>
+            </button>
+        </div>
+    </div>
+    <div style="margin-top:0.5rem;width: 100%;height: 2rem;background-color: #fffc59;border: 1px dotted #1115ff">
+        <b>备注：</b>单件最大不超过20公斤，长宽高单面不超过100CM
+    </div>
+    <div class="data-table table-striped">
+        <table>
+            <thead>
+            <tr>
+                <th width="80">CODE</th>
+                <th width="80">省份（简称）</th>
+                <th width="150">省份全名</th>
+                <th width="80">起步费用(元/kg)</th>
+                <th width="80">首重(元/kg)</th>
+                <th width="80">续重(元/kg)</th>
+                <th width="170">操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            <volist name="result" id="data">
+            <tr class="show-input_{$data.id}">
+                <td>{$data.zone_code}</td>
+                <td>{$data.short_name}</td>
+                <td>{$data.name}</td>
+                <td>{$data.first_charge}/{$data.first_weight}</td>
+                <td>{$data.second_charge}/{$data.second_weight}</td>
+                <td>{$data.three_charge}/{$data.three_weight}</td>
+                <td class="action">
+                    <a class="db-import update-{$data.id}" onclick="updateData('{$data.id}')">修改</a>&nbsp;
+                    <a class="db-import affirm-{$data.id}" style="display: none" onclick="affirm('{$data.id}')">确认修改</a>&nbsp;
+                    <a  onclick="delRule('{$data.id}')">删除</a>
+                </td>
+            </tr>
+            </volist>
+            </tbody>
+        </table>
+    </div>
 </block>
 
 <block name="script">
+    <script type="text/javascript">
+        function delRule(id){
+            if(confirm("您确定要删除这条记录吗？")){
+            $.post("/admin.php/ReadWriteData/delRule",{id:id},function(data){
+                if(data == 1){
+                    $(".show-input_"+id).remove();
+                }else{
+                    alert("发生未知错误请稍后再试！");
+                }
+            });
+            }
+        }
+        function affirm(id){
+            var code = $(".show-input_"+id).find("td").eq(0).find("input").val();
+            var short_name = $(".show-input_"+id).find("td").eq(1).find("input").val();
+            var name = $(".show-input_"+id).find("td").eq(2).find("input").val();
+            var first = $(".show-input_"+id).find("td").eq(3).find("input").val();
+            if(first == "/" || first == ""){
+                alert("起步费用规则不能为空");return;
+            }
+            var second = $(".show-input_"+id).find("td").eq(4).find("input").val();
 
+            if(second == "/" || second == ""){
+                alert("首重费用规则不能为空");return;
+            }
+
+            var three = $(".show-input_"+id).find("td").eq(5).find("input").val();
+            if(three == "/" || three == ""){
+                alert("续重费用规则不能为空");return;
+            }
+            $.ajax({
+             url: "/admin.php/ReadWriteData/updateRule",
+             type: "POST",
+             data: { id :id , code: code, short_name: short_name, name: name, first: first, second: second, three: three },
+             dataType: "json",
+             success: function (data) {
+             // 此处放成功后执行的代码
+                 if(data == 1){
+                     window.location.reload();
+                 }else{
+                   alert("发生未知错误请稍后再试！");
+                 }
+             }
+             });
+        }
+         function updateData(id){
+             var length = $(".show-input_"+id).find("td").length;
+             var i = 0;
+             $(".show-input_"+id).find("td").each(function(){
+                 i++;
+                 if(i == length){
+                     $(".update-"+id).hide();
+                     $(".affirm-"+id).show();
+                     return;
+                 }
+                 var val = $(this).text();
+                 var str = '<input type="text" value="'+ val +'" style="width:100%;text-align:center"/>';
+                 $(this).html(str);
+             });
+
+         }
+        //导航高亮
+        highlight_subnav('{:U('
+        AuthManager / index
+        ')}'
+        )
+        ;
+    </script>
 </block>
