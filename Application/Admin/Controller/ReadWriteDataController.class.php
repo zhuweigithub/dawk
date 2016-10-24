@@ -150,5 +150,8 @@ class ReadWriteDataController extends AdminController
         M("Province_attr")->where("province_id=".$id)->delete();
         echo 1;
     }
+	public function inOutOrg(){
+		$this->display();
+	}
 
 }

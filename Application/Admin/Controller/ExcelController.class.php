@@ -53,7 +53,7 @@ class ExcelController extends AdminController
 			for ($column = 'A'; $column <= $highestColumm; $column++) { //列数是以A列开始
 				$dataset[] = $sheet->getCell($column . $row)->getValue();
 			}
-			$this->saveData($tableName, $dataset ,$filename);
+			$this->saveData($tableName, $dataset, $filename);
 			unset($dataset);
 		}
 		//上传之后删除掉源excel，以免数据冗余
@@ -61,7 +61,7 @@ class ExcelController extends AdminController
 		$this->success("数据上传成功！");
 	}
 
-	private function saveData($tableName, $param ,$filename)
+	private function saveData($tableName, $param, $filename)
 	{
 		$db = M($tableName);
 		switch ($tableName) {
@@ -74,15 +74,15 @@ class ExcelController extends AdminController
 				break;
 			case 'send_detail':
 				$arr = array(
-					"in_out_date" => $param[0],
+					"in_out_date"    => $param[0],
 					"customer_code"  => $param[1],
-					"customer_name"   => $param[2],
-					"sub_store"   => $param[3],
-					"express_number"   => $param[4],
-					"send_province"   => $param[5],
-					"send_city"   => $param[6],
-					"weight"   => $param[7],
-					"post_money"   => $param[8],
+					"customer_name"  => $param[2],
+					"sub_store"      => $param[3],
+					"express_number" => $param[4],
+					"send_province"  => $param[5],
+					"send_city"      => $param[6],
+					"weight"         => $param[7],
+					"post_money"     => $param[8],
 				);
 				break;
 

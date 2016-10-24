@@ -1,0 +1,107 @@
+<extend name="Public/base"/>
+
+<block name="body">
+	<div class="main-title">
+		<h2>分仓配置</h2>
+	</div>
+     <div style="width:30%;float:right;border:1px solid rgba(255, 251, 129, 0.49);height: 500px;background: rgba(248, 255, 220, 0.29);margin-right:15%;margin-top: 1rem  ">
+
+     </div>
+	<div class="data-table table-striped" style="width: 35%">
+		<table>
+			<thead>
+			<tr>
+				<th width="80">ID</th>
+				<th width="150">分仓名</th>
+				<th width="80">状态</th>
+				<th width="170">操作</th>
+			</tr>
+			</thead>
+			<tbody>
+			<volist name="result" id="data">
+				<tr class="show-input_{$data.id}">
+					<td>{$data.zone_code}</td>
+					<td>{$data.short_name}</td>
+					<td>{$data.name}</td>
+					<td class="action">
+						<a class="db-import update-{$data.id}" onclick="updateData('{$data.id}')">修改</a>&nbsp;
+						<a class="db-import affirm-{$data.id}" style="display: none" onclick="affirm('{$data.id}')">确认修改</a>&nbsp;
+						<a  onclick="delRule('{$data.id}')">删除</a>
+					</td>
+				</tr>
+			</volist>
+			</tbody>
+		</table>
+	</div>
+</block>
+
+<block name="script">
+	<script type="text/javascript">
+		function delRule(id){
+			if(confirm("您确定要删除这条记录吗？")){
+				$.post("/admin.php/ReadWriteData/delRule",{id:id},function(data){
+					if(data == 1){
+						$(".show-input_"+id).remove();
+					}else{
+						alert("发生未知错误请稍后再试！");
+					}
+				});
+			}
+		}
+		function affirm(id){
+			var code = $(".show-input_"+id).find("td").eq(0).find("input").val();
+			var short_name = $(".show-input_"+id).find("td").eq(1).find("input").val();
+			var name = $(".show-input_"+id).find("td").eq(2).find("input").val();
+			var first = $(".show-input_"+id).find("td").eq(3).find("input").val();
+			if(first == "/" || first == ""){
+				alert("起步费用规则不能为空");return;
+			}
+			var second = $(".show-input_"+id).find("td").eq(4).find("input").val();
+
+			if(second == "/" || second == ""){
+				alert("首重费用规则不能为空");return;
+			}
+
+			var three = $(".show-input_"+id).find("td").eq(5).find("input").val();
+			if(three == "/" || three == ""){
+				alert("续重费用规则不能为空");return;
+			}
+			$.ajax({
+				url: "/admin.php/ReadWriteData/updateRule",
+				type: "POST",
+				data: { id :id , code: code, short_name: short_name, name: name, first: first, second: second, three: three },
+				dataType: "json",
+				success: function (data) {
+					// 此处放成功后执行的代码
+					if(data == 1){
+						window.location.reload();
+					}else{
+						alert("发生未知错误请稍后再试！");
+					}
+				}
+			});
+		}
+		function updateData(id){
+			var length = $(".show-input_"+id).find("td").length;
+			var i = 0;
+			$(".show-input_"+id).find("td").each(function(){
+				i++;
+				if(i == length){
+					$(".update-"+id).hide();
+					$(".affirm-"+id).show();
+					return;
+				}
+				var val = $(this).text();
+				var str = '<input type="text" value="'+ val +'" style="width:100%;text-align:center"/>';
+				$(this).html(str);
+			});
+
+		}
+		//导航高亮
+		highlight_subnav('{:U('
+		AuthManager / index
+		')}'
+		)
+		;
+	</script>
+</block>
