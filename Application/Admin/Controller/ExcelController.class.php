@@ -72,6 +72,19 @@ class ExcelController extends AdminController
 					"org_code"   => $param[2]
 				);
 				break;
+			case 'send_detail':
+				$arr = array(
+					"in_out_date" => $param[0],
+					"customer_code"  => $param[1],
+					"customer_name"   => $param[2],
+					"sub_store"   => $param[3],
+					"express_number"   => $param[4],
+					"send_province"   => $param[5],
+					"send_city"   => $param[6],
+					"weight"   => $param[7],
+					"post_money"   => $param[8],
+				);
+				break;
 
 		}
 		if ($arr) {
