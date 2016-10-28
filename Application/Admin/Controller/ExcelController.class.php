@@ -2,7 +2,26 @@
 namespace Admin\Controller;
 class ExcelController extends AdminController
 {
+    public function test(){
+        $highestRow = 27468;
+        $startIndex = 1;
+        $maxLength = $highestRow;
 
+        if( $highestRow > 1000 ){
+            $forNum = ceil( $highestRow / 1000 );
+            $lastNum = $highestRow % 1000;
+            for( $i = 0 ; $i < $forNum ; $i++ ){
+                if( $lastNum != 0 && ($i + 1) == $forNum){
+                    $maxLength = $lastNum;
+                }
+                $startIndex = $i * $maxLength + 1;
+                echo $i .'------'.$startIndex .'---'.$maxLength.'---'.$maxLength .'\n';
+            }
+        }else{
+
+        }
+
+    }
 	public function importExp()
 	{
 		$tableName = $_POST['table_name'];
@@ -36,26 +55,38 @@ class ExcelController extends AdminController
 
 	public function importExcel($tableName, $filename)
 	{
+
 		error_reporting(E_ALL);
-		date_default_timezone_set('Asia/ShangHai');
+        ini_set("memory_limit","1000M");
+        set_time_limit(2000);
+        date_default_timezone_set('Asia/ShangHai');
 		require_once 'Application/Admin/Lib/Org/Util/PHPExcel/IOFactory.php';
 		$reader        = \PHPExcel_IOFactory::createReaderForFile($filename); //设置以Excel5格式(Excel97-2003工作簿)
+
 		$PHPExcel      = $reader->load($filename); // 载入excel文件
 		$sheet         = $PHPExcel->getSheet(0); // 读取第一個工作表
 		$highestRow    = $sheet->getHighestRow(); // 取得总行数
-		$highestColumm = $sheet->getHighestColumn(); // 取得总列数
+		$highestColMum = $sheet->getHighestColumn(); // 取得总列数
 
-		for ($row = 1; $row <= $highestRow; $row++) {
-			//数据第一列一般是表头
-			if ($row == 1) {
-				continue;
-			}
-			for ($column = 'A'; $column <= $highestColumm; $column++) { //列数是以A列开始
-				$dataset[] = $sheet->getCell($column . $row)->getValue();
-			}
-			$this->saveData($tableName, $dataset, $filename);
-			unset($dataset);
-		}
+        for ($row = 1; $row <= $highestRow; $row++) {
+            for ($column = 'A'; $column <= $highestColMum; $column++) { //列数是以A列开始
+                if( $column == 'C' || $column == 'D' || $column == 'F' || $column == 'G' || $column == 'I' || $column == 'J'
+                    || $column == 'K'  || $column == 'M' || $column == 'P' || $column == 'R' || $column == 'U'){
+                    continue;
+                }
+                $dataSet[] = $sheet->getCell($column . $row)->getValue();
+
+            }
+            if((int)$dataSet[0] <= 0){
+                unset($dataSet);
+                continue;
+            }
+            $this->saveData($tableName, $dataSet, $filename);
+            unset($dataSet);
+        }
+        //当发生异常的时候数据回滚，看以下实例
+       // http://www.cnblogs.com/summerzi/archive/2015/04/05/4393790.html
+        //建一个队列补全这个里面的数据晚上12点后执行
 		//上传之后删除掉源excel，以免数据冗余
 		@unlink($filename);
 		$this->success("数据上传成功！");
@@ -74,15 +105,15 @@ class ExcelController extends AdminController
 				break;
 			case 'send_detail':
 				$arr = array(
-					"in_out_date"    => $param[0],
-					"customer_code"  => $param[1],
-					"customer_name"  => $param[2],
-					"sub_store"      => $param[3],
-					"express_number" => $param[4],
-					"send_province"  => $param[5],
-					"send_city"      => $param[6],
-					"weight"         => $param[7],
-					"post_money"     => $param[8],
+					"in_out_date"    => $param[1],
+					"customer_code"  => $param[2],
+					"customer_name"  => $param[3],
+					"sub_store"      => $param[4],
+					"express_number" => $param[5],
+					"send_province"  => $param[6],
+					"send_city"      => $param[7],
+					"weight"         => $param[8],
+					"post_money"     => $param[9]
 				);
 				break;
 
