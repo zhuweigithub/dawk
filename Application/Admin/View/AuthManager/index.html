@@ -10,6 +10,7 @@
         <a url="{:U('changestatus?method=resumeGroup')}" class="btn ajax-post" target-form="ids" >启 用</a>
         <a url="{:U('changestatus?method=forbidGroup')}" class="btn ajax-post" target-form="ids" >禁 用</a>
         <a url="{:U('changestatus?method=deleteGroup')}" class="btn ajax-post confirm" target-form="ids" >删 除</a>
+
     </div>
 	<!-- 数据列表 -->
 	<div class="data-table table-striped">
@@ -40,6 +41,9 @@
 				<a href="{:U('AuthManager/changeStatus?method=resumeGroup&id='.$vo['id'])}" class="ajax-get">启用</a>
 				</eq>
 				<a href="{:U('AuthManager/changeStatus?method=deleteGroup&id='.$vo['id'])}" class="confirm ajax-get">删除</a>
+				<a href="/admin.php/ReadWriteData/substore?id={$vo.id}" >添加分仓</a>
+				<a href="/admin.php/ReadWriteData/addOrg'?id={$vo.id}" >添加机构</a>
+                <a href="{:U('AuthManager/access?group_name='.$vo['title'].'&group_id='.$vo['id'])}">访问授权</a>
                 </td>
 		</tr>
 		</volist>

@@ -75,12 +75,35 @@ class ExcelController extends AdminController
                     continue;
                 }
                 $dataSet[] = $sheet->getCell($column . $row)->getValue();
+                if((int)$dataSet[0] <= 0){
+                    unset($dataSet);
+                    continue;
+                }
+            }
+        }
+        for( $i = 0; $i < 100 ; $i++){
+            $arr[] = array(
+                "in_out_date"    => $dataSet[1],
+                "customer_code"  => $dataSet[2],
+                "customer_name"  => $dataSet[3],
+                "sub_store"      => $dataSet[4],
+                "express_number" => $dataSet[5],
+                "send_province"  => $dataSet[6],
+                "send_city"      => $dataSet[7],
+                "weight"         => $dataSet[8],
+                "post_money"     => $dataSet[9]
+            );
+        }
+            /*  批次处理插入数据
+             * $arr=array(
+    array("name"=>"张三",age=>"20"),
 
-            }
-            if((int)$dataSet[0] <= 0){
-                unset($dataSet);
-                continue;
-            }
+    array("name"=>"李四",age=>"19")
+
+);
+$user=M("User");
+$user->addAll($arr);
+            */
             $this->saveData($tableName, $dataSet, $filename);
             unset($dataSet);
         }

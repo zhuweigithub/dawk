@@ -35,7 +35,7 @@ class AdminController extends Controller {
         C($config); //添加配置
 
         // 是否是超级管理员
-        define('IS_ROOT',   is_administrator());
+       define('IS_ROOT',   is_administrator());
         if(!IS_ROOT && C('ADMIN_ALLOW_IP')){
             // 检查IP地址访问
             if(!in_array(get_client_ip(),explode(',',C('ADMIN_ALLOW_IP')))){
@@ -60,7 +60,7 @@ class AdminController extends Controller {
                     }
                 }
             }
-        }        
+        }
 
         $this->assign('__MENU__', $this->getMenus());
     }

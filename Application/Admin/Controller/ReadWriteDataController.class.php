@@ -163,10 +163,84 @@ class ReadWriteDataController extends AdminController
 	}
 
 	public function subStore(){
+        $id = $_GET['id'];
+        if(empty($id)){
+            $this->error("区域id不能为空");
+        }
 		$subDb = M("Sub_store");
-		$result = $subDb->select();
+		$result = $subDb->where("group_id=". $id)->select();
+
+        foreach($result as $key=>$val){
+            $subId[] = $val['id'];
+        }
+        $param['sub_store_id'] = array("in",$subId);
+        $param['status'] = 1;
+        $list = M('Member')->field("uid,nickname,sub_store_id")->where($param)->select();
+        foreach($result as $key=>$val){
+            foreach($list as $i => $j){
+                if($val['id'] == $j['sub_store_id']){
+                    $result[$key]['uid'] = $j['uid'];
+                    $result[$key]['nickname'] = $j['nickname'];
+                }
+            }
+
+        }
+        $this->assign("group_id",$id);
 		$this->assign("result",$result);
 		$this->display();
 	}
-
+    public function getMember(){
+        $group_id = $_POST['group_id'];
+        $param['area'] = $group_id;
+        $param['sub_store_id'] = 0;
+        $param['status'] = 1;
+        $db = M("Member");
+        $list = $db->field("uid,nickname")->where($param)->select();
+        echo json_encode($list);
+    }
+    public function band(){
+        $sub_id     = $_POST['sub_id'];
+        $selectVal  = $_POST['selectVal'];
+        $param['sub_store_id'] = $sub_id;
+        $dbM = M("Member");
+        $list = $dbM->field("uid,nickname")->where($param)->find();
+        if(count($list) > 0){
+            $arr = array(
+                "uid" => $list['uid'],
+                "sub_store_id" => 0
+            );
+            $dbM->save($arr);
+        }
+        $arr = array(
+            "uid" => $selectVal,
+            "sub_store_id" => $sub_id
+        );
+        $dbM->save($arr);
+        echo 1;
+    }
+    public function addSubStore(){
+        $store_name = $_POST['store_name'];
+        $group_id   = $_POST['group_id'];
+        $arr = array(
+            "group_id"   => $group_id,
+            "sub_store_name" => $store_name
+        );
+        M("Sub_store")->add($arr);
+        echo 1;
+    }
+    public function delSubStore(){
+        $store_id = $_POST['store_id'];
+        $param['sub_store_id'] = $store_id;
+        $dbM = M("Member");
+        $list = $dbM->field("uid,nickname")->where($param)->find();
+        if(count($list) > 0){
+            $arr = array(
+                "uid" => $list['uid'],
+                "sub_store_id" => 0
+            );
+            $dbM->save($arr);
+        }
+        M("Sub_store")->where('id ='.$store_id)->delete();
+        echo 1;
+    }
 }

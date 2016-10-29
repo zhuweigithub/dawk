@@ -1,0 +1,97 @@
+<extend name="Public/base"/>
+
+<block name="body">
+    <div class="main-title">
+        <h2>分仓配置</h2>
+    </div>
+    <div style="width:35%;float:right;border:1px solid rgba(255, 251, 129, 0.49);height: 500px;background: rgba(248, 255, 220, 0.29);margin-right:5%;margin-top: 1rem  ">
+        <style>
+            .member_list div{
+                height:40px;width:120px;display: inline-block;padding: 10px 0;
+            }
+        </style>
+        <div id="band_member"  style="display: none" >
+            选择下面地区绑定到 <span class="sub_store" style="color: red;"></span> 机构<br>
+            <input type="hidden" id="sub_store_id" value=""/>
+            <div class="member_list">
+                <div >加载中...</div>
+            </div>
+            <button type="button" class="btn" style="margin-top:1rem" onclick="band()">绑 定</button>
+        </div>
+    </div>
+    <div class="data-table table-striped" style="width: 55%">
+        <table>
+            <thead>
+            <tr>
+                <th width="30">ID</th>
+                <th width="80">机构CODE</th>
+                <th width="200">机构名</th>
+                <th width="80">区域名</th>
+                <th width="100">团队名</th>
+                <th width="120">操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            <volist name="result" id="vo">
+                <tr class="show-input_{$vo.id}">
+                    <td>{$vo.id}</td>
+                    <td>{$vo.org_code}</td>
+                    <td>{$vo.in_out_org}</td>
+                    <td><input type="hidden" id="area_id" value="{$vo.area_id}" />{$vo.area_name}</td>
+                    <td>{$vo.title}</td>
+                    <td class="action">
+                       <!-- <a  onclick="add_store()">添加</a>
+                        <a  onclick="delSubStore('{$vo.id}')" >删除</a>-->
+                        <a  onclick="bandMember(this)">绑定地区</a>
+                    </td>
+                </tr>
+            </volist>
+            </tbody>
+        </table>
+    </div>
+</block>
+
+<block name="script">
+    <script type="text/javascript">
+
+        function band(){
+            var selectValId = $('input[name="group"]:checked ').val();
+            if(!selectValId){
+                alert("请选择区域！");return;
+            }
+            var org_id =  $("#sub_store_id").val();
+
+            $.post("/admin.php/Org/band",{selectVal : selectValId,org_id:org_id},function(data){
+                if(data == 1){
+                    window.location.reload();
+                }
+            });
+        }
+        function bandMember(obj){
+            $("#band_member").show();
+            var sub_id = $(obj).parents("tr").find("td").eq(0).html();
+            var sub_name = $(obj).parents("tr").find("td").eq(1).html();
+            $(".sub_store").html(sub_name);
+            $("#sub_store_id").val(sub_id);
+            $.post("/admin.php/Org/getGroup",{},function(data){
+                if(!data){
+                    alert("没有找到地区！");return;
+                }
+                data = eval("(" + data + ")");
+                var str = '';
+                for(var i = 0; i < data.length ;i++){
+                    str += '<div > <input type="radio" name="group" value="'+data[i]['id']+'" /><span class="title">'+data[i]['title']+'</span></div>';
+                }
+                $(".member_list").html(str);
+            });
+        }
+
+
+        //导航高亮
+        highlight_subnav('{:U('
+        AuthManager / index
+        ')}'
+        )
+        ;
+    </script>
+</block>
