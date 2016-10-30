@@ -52,7 +52,7 @@
     <script type="text/javascript">
         function delRule(id){
             if(confirm("您确定要删除这条记录吗？")){
-            $.post("/index.php/ReadWriteData/delRule",{id:id},function(data){
+            $.post("index.php?s=/ReadWriteData/delRule",{id:id},function(data){
                 if(data == 1){
                     $(".show-input_"+id).remove();
                 }else{
@@ -80,7 +80,7 @@
                 alert("续重费用规则不能为空");return;
             }
             $.ajax({
-             url: "/index.php/ReadWriteData/updateRule",
+             url: "index.php?s=/ReadWriteData/updateRule",
              type: "POST",
              data: { id :id , code: code, short_name: short_name, name: name, first: first, second: second, three: three },
              dataType: "json",

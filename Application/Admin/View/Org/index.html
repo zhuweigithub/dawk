@@ -60,8 +60,7 @@
                 alert("请选择区域！");return;
             }
             var org_id =  $("#sub_store_id").val();
-
-            $.post("/index.php/Org/band",{selectVal : selectValId,org_id:org_id},function(data){
+            $.post("index.php?s=/Org/band",{selectVal : selectValId,org_id:org_id},function(data){
                 if(data == 1){
                     window.location.reload();
                 }
@@ -73,7 +72,7 @@
             var sub_name = $(obj).parents("tr").find("td").eq(1).html();
             $(".sub_store").html(sub_name);
             $("#sub_store_id").val(sub_id);
-            $.post("/index.php/Org/getGroup",{},function(data){
+            $.post("index.php?s=/Org/getGroup",{},function(data){
                 if(!data){
                     alert("没有找到地区！");return;
                 }

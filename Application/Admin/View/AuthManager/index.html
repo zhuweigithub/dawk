@@ -41,8 +41,9 @@
 				<a href="{:U('AuthManager/changeStatus?method=resumeGroup&id='.$vo['id'])}" class="ajax-get">启用</a>
 				</eq>
 				<a href="{:U('AuthManager/changeStatus?method=deleteGroup&id='.$vo['id'])}" class="confirm ajax-get">删除</a>
-				<a href="/index.php/ReadWriteData/substore?id={$vo.id}" >添加分仓</a>
-				<a href="/index.php/ReadWriteData/addOrg'?id={$vo.id}" >添加机构</a>
+
+				<a href="index.php?s=/ReadWriteData/substore/id/{$vo.id}" >添加分仓</a>
+				<a href="index.php?s=/ReadWriteData/addOrg/id/{$vo.id}" >添加机构</a>
                 <a href="{:U('AuthManager/access?group_name='.$vo['title'].'&group_id='.$vo['id'])}">访问授权</a>
                 </td>
 		</tr>
