@@ -84,7 +84,9 @@
             $(this).css("background-color"," rgba(185, 255, 236, 0.99)");
            month = $(this).find("td").html();
           var type = $("#task_stuts").find("option:selected").val();
-          $.post("ReadWriteData/getSendCount",{month : month , type : type},function(data){
+
+          ///index.php?s=/Admin/ReadWriteData/getSendCount.html
+          $.post("index.php?s=/ReadWriteData/getSendCount.html",{month : month , type : type},function(data){
               data = eval("("+ data +")");
               if(data){
                   var str = "";
