@@ -1,8 +1,27 @@
 <?php
 namespace Admin\Controller;
+use Think\Exception;
+
 class ExcelController extends AdminController
 {
     public function test(){
+
+        $param = array(
+            "0" => array("customer_name"=> "11111"),
+            "1" => array("customer_name"=> "2222"),
+        );
+        $db = M("Send_detail");
+        $db->startTrans();
+        try{
+            $result = $db->addAll($param);
+            $db->commit();
+            echo   $db->getLastSql();
+        }catch (Exception  $e){
+            $db->rollback();
+            $this->error("发生未知错误,数据回滚,详情：".$e);
+        }
+
+        exit;
         $highestRow = 27468;
         $startIndex = 1;
         $maxLength = $highestRow;
@@ -25,6 +44,19 @@ class ExcelController extends AdminController
 	public function importExp()
 	{
 		$tableName = $_POST['table_name'];
+
+        $uid = session('user_auth')['uid'];
+        if(empty($_POST['sub_store'])){
+            $param['uid'] = $uid;
+            $param['position'] = 1;
+            $member = M("Member")->field("area")->where($param)->find();
+            if(count($member) > 0){
+                $group_id = $member['area'];
+            }else{
+                $this->error("请选择地域组");
+            }
+        }else{
+            $group_id = $_POST['sub_store'];
 		$tableName = C("db_table")[$tableName];
 		if (empty($tableName)) {
 			$this->error("请选择上传的库");
@@ -45,15 +77,15 @@ class ExcelController extends AdminController
 				$base_path = str_replace('\\', '/', realpath(dirname(__FILE__) . '/'));
 				$base_path = str_replace('/Application/Admin/Controller', '', $base_path) . '/';
 				$path      = $base_path . $uploads . $info['savepath'] . $info['savename'];
-				$this->importExcel($tableName, $path);
+				$this->importExcel($tableName, $path ,$group_id);
 
 			}
 		} else {
 			$this->error("请选择上传的文件");
 		}
-	}
-
-	public function importExcel($tableName, $filename)
+	    }
+    }
+	public function importExcel($tableName, $filename ,$group_id)
 	{
 
 		error_reporting(E_ALL);
@@ -68,6 +100,14 @@ class ExcelController extends AdminController
 		$highestRow    = $sheet->getHighestRow(); // 取得总行数
 		$highestColMum = $sheet->getHighestColumn(); // 取得总列数
 
+        /*创建回滚机制*/
+        if($tableName == 'send_detail'){
+            $db = M($tableName);
+            $db->startTrans();
+        }else{
+            $this->error("请选择正确的库！");
+        }
+
         for ($row = 1; $row <= $highestRow; $row++) {
             for ($column = 'A'; $column <= $highestColMum; $column++) { //列数是以A列开始
                 if( $column == 'C' || $column == 'D' || $column == 'F' || $column == 'G' || $column == 'I' || $column == 'J'
@@ -75,129 +115,207 @@ class ExcelController extends AdminController
                     continue;
                 }
                 $dataSet[] = $sheet->getCell($column . $row)->getValue();
-                if((int)$dataSet[0] <= 0){
-                    unset($dataSet);
-                    continue;
-                }
+
+            }
+            if((int)$dataSet[0] <= 0){
+                unset($dataSet);
+                continue;
+            }
+            $param = $this->getSubStore($dataSet[4] ,$group_id );
+            $balancing = $this->getBalancing($dataSet[6],$dataSet[8]);
+            $arr[] = array(
+                "in_out_date" => $dataSet[1],
+                "customer_code" => $dataSet[2],
+                "customer_name" => $dataSet[3],
+                "sub_store" => $dataSet[4],
+                "express_number" => $dataSet[5],
+                "send_province" => $dataSet[6],
+                "send_city" => $dataSet[7],
+                "weight" => $dataSet[8],
+                "post_money" => $dataSet[9],
+                "balancing" => $balancing,
+                "in_out_org_name" => $param['in_out_org_name'],
+                "in_out_org_code" => $param['in_out_org_code'],
+                "in_out_org_id" => $param['in_out_org_id'],
+                "team_id" => $param['team_id'],
+                "team_name" => $param['team_name'],
+                "member_id" => $param['member_id'],
+                "team_member_name" => $param['team_member_name'],
+                "sub_store_id" => $param['sub_store_id']
+            );
+            unset($dataSet);
+            if( count($arr) >= 500 || $row == $highestRow ){
+                $this->saveData($db, $arr, $filename);
             }
         }
-        for( $i = 0; $i < 100 ; $i++){
-            $arr[] = array(
-                "in_out_date"    => $dataSet[1],
-                "customer_code"  => $dataSet[2],
-                "customer_name"  => $dataSet[3],
-                "sub_store"      => $dataSet[4],
-                "express_number" => $dataSet[5],
-                "send_province"  => $dataSet[6],
-                "send_city"      => $dataSet[7],
-                "weight"         => $dataSet[8],
-                "post_money"     => $dataSet[9]
-            );
-        }
-            /*  批次处理插入数据
-             * $arr=array(
-    array("name"=>"张三",age=>"20"),
 
-    array("name"=>"李四",age=>"19")
-
-);
-$user=M("User");
-$user->addAll($arr);
-            */
-            $this->saveData($tableName, $dataSet, $filename);
-            unset($dataSet);
-        }
-        //当发生异常的时候数据回滚，看以下实例
        // http://www.cnblogs.com/summerzi/archive/2015/04/05/4393790.html
         //建一个队列补全这个里面的数据晚上12点后执行
 		//上传之后删除掉源excel，以免数据冗余
 		@unlink($filename);
 		$this->success("数据上传成功！");
 	}
+    private function saveData($db, $param, $filename)
+    {
+        //当发生异常的时候数据回滚，看以下实例
+        if(!empty($param)){
+            try{
+                $result = $db->addAll($param);
+                $db->commit();
+            }catch (Exception  $e){
+                $db->rollback();
+                @unlink($filename);
+                $this->error("发生未知错误,数据回滚,详情：".$e ,'',5);
+            }
+        }
+    }
+    private function getBalancing($province,$weight){
+        $weight = $weight / 1000;
+        $param['name'] = $province;
+        $pro = M("Province")->field("id")->where($param)->find();
+        if(count($pro) <= 0){
+            $this->error("没有找到省份！");
+        }
+        $weight_rule = M("Province_attr")->field("first_weight,second_weight,three_weight")->where("province_id = ".$pro["id"])->find();
+        $charge_rule = M("Charge")->field("first_charge,second_charge,three_charge")->where("province_id = ".$pro["id"])->find();
+        if(count($weight_rule) <= 0 || count($charge_rule) <= 0){
+            $this->error("请补全相应的邮费规则！");
+        }
+        $balancing = 0;
+        if($weight_rule['first_weight'] >= $weight ){
+            $balancing = $charge_rule['first_charge'];
+        }else if($weight_rule['second_weight'] >= $weight){
+            $balancing = $charge_rule['second_charge'];
+        }else{
+            $more_weight = $weight - $weight_rule['first_weight'];
+            $balancing = ceil($more_weight / $weight_rule['three_weight']) * $charge_rule['three_charge'] + $charge_rule['first_charge'];
+        }
 
-	private function saveData($tableName, $param, $filename)
+       return $balancing;
+    }
+    private function getSubStore($sub_name ,$group_id ){
+        $subDb = M("Sub_store");
+
+        /*新加的分仓，操作员都为区域管理员*/
+        $group = M("Auth_group")->field("id,title,org_id")->where("id =".$group_id)->find();
+        if($group['org_id'] > 0){
+            $org   = M("In_out_org")->field("id,in_out_org,org_code")->where("id=".$group['org_id'])->find();
+            if(count($org) <= 0){
+                $this->error("没有找到对应的机构，请检查配置信息！");
+            }
+        }else{
+            $this->error("请先配置好区域和机构对应关系！");
+        }
+
+        $dataSet['team_id'] =$group['id'];
+        $dataSet['team_name'] =$group['title'];
+
+        $dataSet['in_out_org_name'] =$org['in_out_org'];
+        $dataSet['in_out_org_code'] =$org['org_code'];
+        $dataSet['in_out_org_id'] =$org['id'];
+
+        $param['group_id'] = $group_id;
+        $param['sub_store_name'] = $sub_name;
+        $param['status'] = 0;
+        $result = $subDb->where($param)->find();
+        $sub_id = 0;
+
+        if(count($result) > 0){
+            $sub_id = $result['id'];
+
+        }else{
+            $arr = array(
+                "group_id" =>$group_id,
+                "sub_store_name" => $sub_name
+            );
+            $sub_id = $subDb->add($arr);
+        }
+        $member = M("member")->field("uid,nickname")->where("sub_store_id=".$sub_id)->find();
+        if(count($member) <= 0){
+            $member = M("member")->field("uid,nickname")->where("area=".$group_id)->find();
+        }
+        $dataSet['sub_store_id'] = $sub_id;
+        $dataSet['member_id'] =$member['uid'];
+        $dataSet['team_member_name'] =$member['nickname'];
+        return $dataSet;
+
+    }
+
+    private function isAdmin(){
+        return intval(session('user_auth')['uid']) === C('USER_ADMINISTRATOR');
+    }
+    public function getSendList($month,$type){
+        $param['month'] = $month;
+        if(!$this->isAdmin()){
+            $result = M("Member")->field("area")->where("uid = " .session('user_auth')['uid'])->find();
+            $param['team_id'] = $result['area'];
+        }
+        if($type == 1 && $this->isAdmin()){
+            $tableName = "send_count_date";
+        }else if($type == 1 && !$this->isAdmin()){
+            $tableName = "send_count_date_group";
+        }
+        if($type == 2 ){
+            $tableName = "send_count_customer";
+        }
+        $result = M($tableName)->where($param)->select();
+        $num_count = 0;
+        $post_money_count = 0;
+        $balancing_count = 0;
+        $gap_money_count = 0;
+        foreach($result as $key=>$val){
+            $num_count += $val['num'];
+            $post_money_count += $val['post_money'];
+            $balancing_count += $val['balancing'];
+            $gap_money_count += $val['gap_money'];
+        }
+        $result[count($result)] = array(
+        "month" => "2016-10",
+        "num" => $num_count,
+        "post_money" => $post_money_count,
+        "balancing" => $balancing_count,
+        "gap_money" => $gap_money_count
+        );
+        if(type == 1){
+            $result[count($result)-1]['in_out_date'] = "合计";
+        }else{
+            $result[count($result)-1]['customer_name'] = "合计";
+        }
+
+        //dump($result);exit;
+        return $result;
+    }
+	public function exportExcel()
 	{
-		$db = M($tableName);
-		switch ($tableName) {
-			case 'in_out_org':
-				$arr = array(
-					"in_out_org" => $param[0],
-					"area_name"  => $param[1],
-					"org_code"   => $param[2]
-				);
-				break;
-			case 'send_detail':
-				$arr = array(
-					"in_out_date"    => $param[1],
-					"customer_code"  => $param[2],
-					"customer_name"  => $param[3],
-					"sub_store"      => $param[4],
-					"express_number" => $param[5],
-					"send_province"  => $param[6],
-					"send_city"      => $param[7],
-					"weight"         => $param[8],
-					"post_money"     => $param[9]
-				);
-				break;
-
-		}
-		if ($arr) {
-			$db->add($arr);
-		} else {
-			@unlink($filename);
-			$this->error("发生未知错误！");
-		}
-	}
-
-	public function export($orders, $total)
-	{
+        $month = $_GET['month'];
+        $type = $_GET['type'];
+        $result = $this->getSendList($month,$type);
+        $total = count($result);
 		if ($total > 1000000) {
 			exit('最多导出1000000条订单');
 		}
+
 		ini_set('memory_limit', '128M');
 		require_once 'Application/Admin/Lib/Org/Util/PHPExcel.php';
 		$excel     = new \PHPExcel();
 		$xlsWriter = new \PHPExcel_Writer_Excel5($excel);
-
-		$cells = array(
-			'A' => array('title' => '商户订单号', 'width' => '25', 'value_key' => 'order_no', 'format' => 'string'),
-			'B' => array('title' => '客户ID号', 'width' => '15', 'value_key' => 'home_phone'),
-			'C' => array('title' => '订单状态', 'width' => '12', 'value_key' => 'status', 'action' => 'get_order_status', 'action_param' => true),
-			'D' => array('title' => '下单时间', 'width' => '20', 'value_key' => 'add_time', 'format' => 'date'),
-			'E' => array('title' => '支付时间', 'width' => '20', 'value_key' => 'pay_time', 'format' => 'date'),
-			'F' => array('title' => '总金额', 'width' => '12', 'value_key' => 'total_price', 'type' => 'recount'),
-			'G' => array('title' => '付款金额', 'width' => '12', 'value_key' => 'pay_price', 'type' => 'recount'),
-			'H' => array('title' => '支付方式', 'width' => '12', 'value_key' => 'pay_type', 'action' => 'get_pay_type', 'action_param' => true),
-			'I' => array('title' => '支付流水号', 'width' => '12', 'value_key' => 'pay_no'),
-			'J' => array('title' => '收货人', 'width' => '12', 'value_key' => 'consignee'),
-			'K' => array('title' => '收货人手机号', 'width' => '15', 'value_key' => 'mobile'),
-			'L' => array('title' => '收货地址', 'width' => '50', 'value_key' => array('province_str', 'city_str', 'zone_str', 'address_detail')),
-			'M' => array('title' => '物流单号', 'width' => '15', 'value_key' => 'logistics_no', 'format' => 'string'),
-			'N' => array('title' => '物流公司', 'width' => '12', 'value_key' => 'logistics_name_cn'),
-			'O' => array('title' => '商品编号', 'width' => '12', 'value_key' => 'product_no'),
-			'P' => array('title' => '商品名称', 'width' => '25', 'value_key' => 'name', 'type' => 'goods'),
-			'Q' => array('title' => '商品原价', 'width' => '12', 'value_key' => 'price', 'type' => 'goods'),
-			'R' => array('title' => '商品促销价', 'width' => '12', 'value_key' => 'pay_price', 'type' => 'goods'),
-			'S' => array('title' => '商品数量', 'width' => '12', 'value_key' => 'num', 'type' => 'goods'),
-		);
-
-		if (ACTION_NAME == 'refund') {
-			$cell_2 = array(
-				'T' => array('title' => '退款金额', 'width' => '12', 'value_key' => 'refund_money'),
-				'U' => array('title' => '退款申请时间', 'width' => '20', 'value_key' => 'refund_add_time', 'format' => 'date'),
-				'V' => array('title' => '退款处理状态', 'width' => '12', 'value_key' => 'refund_flow', 'action' => 'get_order_refund_status'),
-			);
-			$cells  = array_merge($cells, $cell_2);
-		} elseif (ACTION_NAME == 'repair') {
-			$cell_2 = array(
-				'T' => array('title' => '退款金额', 'width' => '12', 'value_key' => 'refund_money'),
-				'U' => array('title' => '退款申请时间', 'width' => '20', 'value_key' => 'refund_add_time', 'format' => 'date'),
-				'V' => array('title' => '退款处理状态', 'width' => '12', 'value_key' => 'refund_flow', 'action' => 'get_order_refund_status'),
-				'W' => array('title' => '退款原因', 'width' => '20', 'value_key' => 'refund_cause', 'action' => 'get_refund_cause'),
-			);
-			$cells  = array_merge($cells, $cell_2);
-		}
-
+       if($type == 1){
+           $cells = array(
+               'A' => array('title' => '收寄日期', 'width' => '30', 'value_key' => 'in_out_date','format' => 'date'),
+               'B' => array('title' => '收寄件数', 'width' => '15', 'value_key' => 'num'),
+               'C' => array('title' => '系统结算', 'width' => '20', 'value_key' => 'post_money'),
+               'D' => array('title' => '实际结算', 'width' => '20', 'value_key' => 'balancing'),
+               'E' => array('title' => '结算差额', 'width' => '20', 'value_key' => 'gap_money')
+           );
+       }else{
+           $cells = array(
+               'A' => array('title' => '客户名', 'width' => '25', 'value_key' => 'customer_name', 'format' => 'string'),
+               'B' => array('title' => '收寄件数', 'width' => '15', 'value_key' => 'num'),
+               'C' => array('title' => '系统结算', 'width' => '20', 'value_key' => 'post_money'),
+               'D' => array('title' => '实际结算', 'width' => '20', 'value_key' => 'balancing'),
+               'E' => array('title' => '结算差额', 'width' => '20', 'value_key' => 'gap_money')
+           );
+       }
 		$row = 1;
 
 		foreach ($cells as $key => $value) {
@@ -212,47 +330,23 @@ $user->addAll($arr);
 		}
 
 
-		foreach ($orders as $order) {
-			$redo = false;
-			foreach ($order['goods_list'] as $goods_list) {
-				++$row;
-				foreach ($cells as $key => $value) {
-					if (is_string($value['value_key'])) {
-						if ($value['format'] == 'string') {
-							$excel->getActiveSheet()->setCellValueExplicit($key . $row, $order[$value['value_key']], \PHPExcel_Cell_DataType::TYPE_STRING);
-						} elseif ($value['format'] == 'date') {
-							$datetime = !empty($order[$value['value_key']]) ? date('Y-m-d H:i:s', $order[$value['value_key']]) : '';
-							$excel->getActiveSheet()->setCellValue($key . $row, $datetime);
-						} else {
-							$tmpValue = $order[$value['value_key']];
-							$params   = array();
-							if (!empty($value['action'])) {
-								$params[] = $tmpValue;
-								if (isset($value['action_param'])) $params[] = $value['action_param'];
-								$tmpValue = call_user_func_array($value['action'], $params);
-							}
-							if ($value['type'] == 'goods') {
-								$tmpValue = $goods_list[$value['value_key']];
-							} elseif ($value['type'] == 'recount') {
-								if ($value['value_key'] == 'total_price') {
-									$tmpValue = $goods_list['num'] * $goods_list['price'];
-								} else {
-									$tmpValue = $goods_list['num'] * $goods_list['pay_price'];
-								}
-							}
-							$excel->getActiveSheet()->setCellValue($key . $row, $tmpValue);
-						}
-					} elseif (is_array($value['value_key'])) {
-						$str = '';
-						foreach ($value['value_key'] as $v) {
-							$str .= $order[$v];
-						}
-						$excel->getActiveSheet()->setCellValue($key . $row, $str);
-					}
-				}
+		foreach ($result as $key=>$items) {
+            ++$row;
+            foreach ($cells as $key => $value) {
+                if (is_string($value['value_key'])) {
+                    if ($value['format'] == 'string') {
+                        $excel->getActiveSheet()->setCellValueExplicit($key . $row, $items[$value['value_key']], \PHPExcel_Cell_DataType::TYPE_STRING);
+                    } elseif ($value['format'] == 'date') {
+                        $datetime = !empty($items[$value['value_key']]) ? str_replace("00:00:00", "", $items[$value['value_key']])  : '';
+                        $excel->getActiveSheet()->setCellValue($key . $row, $datetime);
+                    } else {
+                        $tmpValue = $items[$value['value_key']];
+                        $excel->getActiveSheet()->setCellValue($key . $row, $tmpValue);
+                    }
+                }
 			}
 		}
-		$outputFileName = date('Y-m-d') . '.xls';
+		$outputFileName = $month .'客户收寄统计报表.xls';
 		header("Content-Type: application/force-download");
 		header("Content-Type: application/octet-stream");
 		header("Content-Type: application/download");

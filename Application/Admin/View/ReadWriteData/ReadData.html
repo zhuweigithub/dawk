@@ -3,77 +3,112 @@
 <block name="body">
 	<!-- 标题栏 -->
 	<div class="main-title">
-		<h2>包裹数据一览</h2>
+		<h2>收寄数据总览</h2>
 	</div>
-	<!-- /标题栏 -->
+    <div class="cf">
+        <div class="fl">
 
-	<!-- 应用列表 -->
-	<div class="data-table table-striped">
+            <label class="item-label">显示：<span class="check-tips"></span></label>
+
+            <select id="task_stuts" name="task_stuts" style="width:120px">
+                    <option value="1"  <?php if( $stuts == 1)echo 'selected'; else echo ''; ?>>按天数统计</option>
+                    <option value="2"  <?php if( $stuts == 2)echo 'selected'; else echo ''; ?>>按顾客统计</option>
+            </select>
+        </div>
+    </div>
+    <div style="margin-top:0.5rem;width: 100%;height: 1.5rem;background-color: #fffc59;border: 1px dotted #1115ff">
+        <b>说明：</b>最多显示50条记录，需要查看更多请导出excel。
+    </div>
+    <style>
+        .nav-select tr{ cursor: pointer}
+    </style>
+
+	<div class="data-table table-striped" style="width: 10%;float: left">
 		<table>
 			<thead>
 			<tr>
-				<th width="200">备份名称</th>
-				<th width="80">卷数</th>
-				<th width="80">压缩</th>
-				<th width="80">数据大小</th>
-				<th width="200">备份时间</th>
-				<th>状态</th>
-				<th width="120">操作</th>
+				<th width="100%">月份</th>
 			</tr>
 			</thead>
-			<tbody>
-			<volist name="list" id="data">
+			<tbody  class="nav-select">
+			<volist name="result" id="vo">
 				<tr>
-					<td>{$data.time|date='Ymd-His',###}</td>
-					<td>{$data.part}</td>
-					<td>{$data.compress}</td>
-					<td>{$data.size|format_bytes}</td>
-					<td>{$key}</td>
-					<td>-</td>
-					<td class="action">
-						<a class="db-import" href="{:U('import?time='.$data['time'])}">还原</a>&nbsp;
-						<a class="ajax-get confirm" href="{:U('del?time='.$data['time'])}">删除</a>
-					</td>
+					<td >{$vo.month}</td>
 				</tr>
 			</volist>
 			</tbody>
 		</table>
 	</div>
-	<!-- /应用列表 -->
+    <div class="data-table table-striped" style="width: 60%;float: left;margin-left:5%">
+        <table>
+            <thead>
+            <tr class="head_name">
+                <th width="50" >ID</th>
+                <th width="100">收寄日期</th>
+                <th width="60">包裹数量</th>
+                <th width="60">系统资费</th>
+                <th width="60">实际资费</th>
+                <th width="60">资费差额</th>
+            </tr>
+            </thead>
+            <tbody id="count_list">
+            <tr >
+                <td colspan='6' style='text-align: center;color:green'>请选择左边的月份！</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div style="width: 10%;float: left;margin-left:5%;margin-top:3.5rem">
+        <button class="btn" onClick="exportExcel()" style="width: 100%">导出Excel</button>
+
+    </div>
 </block>
 
 <block name="script">
-	<script type="text/javascript">
-		$(".db-import").click(function(){
-			var self = this, status = ".";
-			$.get(self.href, success, "json");
-			window.onbeforeunload = function(){ return "正在还原数据库，请不要关闭！" }
-			return false;
+    <script type="text/javascript">
+        var month;
+        function exportExcel(){
+            var type = $("#task_stuts").find("option:selected").val();
+            if(month == ""){
+                alert("请选择导出的月份！");return;
+            }
+            if(!type){
+                alert("请选择导出类型！");return;
+            }
+            window.location.href = "/admin.php/Excel/exportExcel?month="+ month +"&type="+type;
+        }
+      $(".nav-select > tr").on("click",function(){
+          $(".nav-select > tr").each(function(){
+              $(this).css("background-color","");
+            });
+            $(this).css("background-color"," rgba(185, 255, 236, 0.99)");
+           month = $(this).find("td").html();
+          var type = $("#task_stuts").find("option:selected").val();
+          $.post("/admin.php/ReadWriteData/getSendCount",{month : month , type : type},function(data){
+              data = eval("("+ data +")");
+              if(data){
+                  var str = "";
+                      for(var i = 0 ; i < data.length ; i++){
+                          if(type == 1){
+                              $(".head_name").find("th").eq(1).html("收寄日期");
+                                data[i].in_out_date = data[i].in_out_date.replace("00:00:00","");
+                                str += '<tr><td>' + data[i].id + '</td><td>' + data[i].in_out_date + '</td><td>' + data[i].num + '</td>' +
+                                  '<td>' + data[i].post_money + '</td><td>' + data[i].balancing + '</td><td>' + data[i].gap_money + '</td></tr>';
+                          }else{
+                               $(".head_name").find("th").eq(1).html("顾客");
+                              str += '<tr><td>' + data[i].id + '</td><td>' + data[i].customer_name + '</td><td>' + data[i].num + '</td>' +
+                                      '<td>' + data[i].post_money + '</td><td>' + data[i].balancing + '</td><td>' + data[i].gap_money + '</td></tr>';
+                          }
+                      }
+                      $("#count_list").html(str);
+              }else{
+                  $("#count_list").html("<tr ><td colspan='6' style='text-align: center;color:red'>没有找到记录！</td></tr>");
+              }
 
-			function success(data){
-				if(data.status){
-					if(data.gz){
-						data.info += status;
-						if(status.length === 5){
-							status = ".";
-						} else {
-							status += ".";
-						}
-					}
-					$(self).parent().prev().text(data.info);
-					if(data.part){
-						$.get(self.href,
-								{"part" : data.part, "start" : data.start},
-								success,
-								"json"
-						);
-					}  else {
-						window.onbeforeunload = function(){ return null; }
-					}
-				} else {
-					updateAlert(data.info,'alert-error');
-				}
-			}
-		});
-	</script>
+
+          });
+      });
+
+    </script>
+
 </block>

@@ -8,7 +8,14 @@ class ReadWriteDataController extends AdminController
 	public function writeData()
 	{
 		$result = C("db_table");
+        $sub_store_list = [];
+        if(intval(session('user_auth')['uid']) === C('USER_ADMINISTRATOR')){
+           $sub_store_list = M("Auth_group")->field("id,title")->where("status = 1")->select();
+
+        }
+
 		$this->assign("result", $result);
+		$this->assign("sub_store_list", $sub_store_list);
 		$this->display();
 	}
 
@@ -28,11 +35,33 @@ class ReadWriteDataController extends AdminController
 	public function ReadData()
 	{
 
-		$result = C("CONFIG_TABLE");
+        $result = M("Send_month")->select();
 		$this->assign("result", $result);
 		$this->display();
 
 	}
+    private function isAdmin(){
+        return intval(session('user_auth')['uid']) === C('USER_ADMINISTRATOR');
+    }
+    public function getSendCount(){
+        $month = $_POST['month'];
+        $type = $_POST['type'];
+        $param['month'] = $month;
+        if(!$this->isAdmin()){
+            $result = M("Member")->field("area")->where("uid = " .session('user_auth')['uid'])->find();
+            $param['team_id'] = $result['area'];
+        }
+        if($type == 1 && $this->isAdmin()){
+            $tableName = "send_count_date";
+        }else if($type == 1 && !$this->isAdmin()){
+            $tableName = "send_count_date_group";
+        }
+        if($type == 2 ){
+            $tableName = "send_count_customer";
+        }
+        $result = M($tableName)->where($param)->limit(0,50)->select();
+        echo json_encode($result);
+    }
 
 	public function addOrUpdateProvince()
 	{
