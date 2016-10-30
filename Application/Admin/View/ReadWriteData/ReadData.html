@@ -75,7 +75,7 @@
             if(!type){
                 alert("请选择导出类型！");return;
             }
-            window.location.href = "/index.php/Excel/exportExcel?month="+ month +"&type="+type;
+            window.location.href = "Excel/exportExcel?month="+ month +"&type="+type;
         }
       $(".nav-select > tr").on("click",function(){
           $(".nav-select > tr").each(function(){
@@ -84,7 +84,7 @@
             $(this).css("background-color"," rgba(185, 255, 236, 0.99)");
            month = $(this).find("td").html();
           var type = $("#task_stuts").find("option:selected").val();
-          $.post("/index.php/ReadWriteData/getSendCount",{month : month , type : type},function(data){
+          $.post("ReadWriteData/getSendCount",{month : month , type : type},function(data){
               data = eval("("+ data +")");
               if(data){
                   var str = "";
