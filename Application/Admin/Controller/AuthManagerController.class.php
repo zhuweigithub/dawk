@@ -293,7 +293,7 @@ class AuthManagerController extends AdminController{
           );
 
         if ( $Member->save($arr) ){
-            $this->success('操作成功','/index.php/User/index');
+            $this->success('操作成功','/User/index');
         }else{
             $this->error("授权失败，请稍候重试！");
         }
