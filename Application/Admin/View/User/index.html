@@ -123,7 +123,7 @@
             if(ids == ""){
                alert("请选择成员");return;
             }
-            $.post("/admin.php/User/addGroupMember",{group:selectGroup,ids:ids},function(data){
+            $.post("/index.php/User/addGroupMember",{group:selectGroup,ids:ids},function(data){
                 data = eval("(" + data + ")");
                 if( data == ""){
                     window.location.reload();

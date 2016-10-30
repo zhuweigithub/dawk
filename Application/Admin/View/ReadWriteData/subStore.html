@@ -70,7 +70,7 @@
 	<script type="text/javascript">
         function delSubStore(id){
             if(confirm("是否删除此分仓！")){
-            $.post("/admin.php/ReadWriteData/delSubStore",{store_id : id},function(data){
+            $.post("/index.php/ReadWriteData/delSubStore",{store_id : id},function(data){
                 if(data == 1){
                     $(".show-input_"+id).remove();
                 }
@@ -87,7 +87,7 @@
             if(store_name == ""){
                alert("请输入分仓名！");return;
             }
-            $.post("/admin.php/ReadWriteData/addSubStore",{store_name : store_name,group_id:group_id},function(data){
+            $.post("/index.php/ReadWriteData/addSubStore",{store_name : store_name,group_id:group_id},function(data){
                 if(data == 1){
                     window.location.reload();
                 }
@@ -97,7 +97,7 @@
             var selectVal = $('input[name="member"]:checked ').val();
             var sub_id =  $("#sub_store_id").val();
 
-            $.post("/admin.php/ReadWriteData/band",{selectVal : selectVal,sub_id:sub_id},function(data){
+            $.post("/index.php/ReadWriteData/band",{selectVal : selectVal,sub_id:sub_id},function(data){
                 if(data == 1){
                     window.location.reload();
                 }
@@ -111,7 +111,7 @@
             $(".sub_store").html(sub_name);
             $("#sub_store_id").val(sub_id);
             var group_id = $(".group_id").val();
-            $.post("/admin.php/ReadWriteData/getMember",{group_id : group_id},function(data){
+            $.post("/index.php/ReadWriteData/getMember",{group_id : group_id},function(data){
                 if(!data){
                     alert("没有找到仓管员！");return;
                 }
@@ -125,7 +125,7 @@
         }
 		function delRule(id){
 			if(confirm("您确定要删除这条记录吗？")){
-				$.post("/admin.php/ReadWriteData/delRule",{id:id},function(data){
+				$.post("/index.php/ReadWriteData/delRule",{id:id},function(data){
 					if(data == 1){
 						$(".show-input_"+id).remove();
 					}else{
