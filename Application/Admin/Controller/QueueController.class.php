@@ -17,6 +17,7 @@ class QueueController extends AdminController
             $this->sendCountByCustomerQueue($month);
             $this->sendCountByDateQueue($month);
             $this->sendCountGroupByDateQueue($month);
+            $this->sendCountByDataCustomerQueue($month);
         }else{
             \Think\Log::record(time().'===Queue->runQueue队列已经跑过了');
         }
@@ -111,6 +112,42 @@ class QueueController extends AdminController
         }
         if(!empty($arr)){
             $dbCount = M("Send_count_customer");
+            $dbCount->startTrans();
+            try{
+                $dbCount->addAll($arr);
+                $dbCount->commit();
+            }catch (Exception $e){
+                $dbCount->rollback();
+                \Think\Log::record(time().'===Queue->sendDetailMonthCountQueue'.$e);
+            }
+        }
+
+
+
+    }
+
+    public function sendCountByDataCustomerQueue($month){
+        $db = M();
+        $sql = "select team_id,count(*) as num,customer_code,customer_name,in_out_date,sum(post_money) as post_money,sum(balancing) as balancing
+                 from t_send_detail where in_out_date like '".$month."%' GROUP BY customer_code,in_out_date ";
+        $result = $db->query($sql);
+        foreach($result as $key=>$val){
+
+            $arr[] = array(
+                "month"  => $month,
+                "team_id"  => $val['team_id'],
+                "in_out_date"  => $val['in_out_date'],
+                "customer_code"  => $val['customer_code'],
+                "customer_name"  => $val['customer_name'],
+                "num"  => $val['num'],
+                "post_money"  => $val['post_money'],
+                "balancing"  => $val['balancing'],
+                "gap_money"  => $val['balancing'] - $val['post_money'],
+                "create_time"  => date('Y-m-d H:i:s',time())
+            );
+        }
+        if(!empty($arr)){
+            $dbCount = M("Send_count_date_customer");
             $dbCount->startTrans();
             try{
                 $dbCount->addAll($arr);

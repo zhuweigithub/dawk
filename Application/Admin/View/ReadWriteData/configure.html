@@ -18,13 +18,19 @@
         <table>
             <thead>
             <tr>
-                <th width="80">CODE</th>
-                <th width="80">省份（简称）</th>
-                <th width="150">省份全名</th>
-                <th width="80">起步费用(元/kg)</th>
+                <th width="80" rowspan="2">CODE</th>
+                <th width="80" rowspan="2">省份（简称）</th>
+                <th width="150" rowspan="2">省份全名</th>
+                <th width="240" colspan="3" style="text-align: center">标准一</th>
+                <th width="80" colspan="2" style="text-align: center">标准二</th>
+                <th width="70" rowspan="2">操作</th>
+            </tr>
+            <tr>
+                <th width="80">起步(元/kg)</th>
                 <th width="80">首重(元/kg)</th>
                 <th width="80">续重(元/kg)</th>
-                <th width="170">操作</th>
+                <th width="80">续重(元/kg)</th>
+                <th width="80">续重(元/kg)</th>
             </tr>
             </thead>
             <tbody>
@@ -36,6 +42,8 @@
                 <td>{$data.first_charge}/{$data.first_weight}</td>
                 <td>{$data.second_charge}/{$data.second_weight}</td>
                 <td>{$data.three_charge}/{$data.three_weight}</td>
+                <td>{$data.first_charge_s}/{$data.first_weight_s}</td>
+                <td>{$data.three_charge_s}/{$data.three_weight_s}</td>
                 <td class="action">
                     <a class="db-import update-{$data.id}" onclick="updateData('{$data.id}')">修改</a>&nbsp;
                     <a class="db-import affirm-{$data.id}" style="display: none" onclick="affirm('{$data.id}')">确认修改</a>&nbsp;
@@ -67,22 +75,30 @@
             var name = $(".show-input_"+id).find("td").eq(2).find("input").val();
             var first = $(".show-input_"+id).find("td").eq(3).find("input").val();
             if(first == "/" || first == ""){
-                alert("起步费用规则不能为空");return;
+                alert("规则一起步费用规则不能为空");return;
             }
             var second = $(".show-input_"+id).find("td").eq(4).find("input").val();
 
             if(second == "/" || second == ""){
-                alert("首重费用规则不能为空");return;
+                alert("规则一首重费用规则不能为空");return;
             }
 
             var three = $(".show-input_"+id).find("td").eq(5).find("input").val();
             if(three == "/" || three == ""){
-                alert("续重费用规则不能为空");return;
+                alert("规则一续重费用规则不能为空");return;
+            }
+            var first_s = $(".show-input_"+id).find("td").eq(6).find("input").val();
+            if(three == "/" || three == ""){
+                alert("规则二首重费用规则不能为空");return;
+            }
+            var three_s = $(".show-input_"+id).find("td").eq(7).find("input").val();
+            if(three == "/" || three == ""){
+                alert("规则二续重费用规则不能为空");return;
             }
             $.ajax({
              url: "index.php?s=/ReadWriteData/updateRule",
              type: "POST",
-             data: { id :id , code: code, short_name: short_name, name: name, first: first, second: second, three: three },
+             data: { id :id , code: code, short_name: short_name, name: name, first: first, second: second, three: three,first_s:first_s ,three_s:three_s},
              dataType: "json",
              success: function (data) {
              // 此处放成功后执行的代码

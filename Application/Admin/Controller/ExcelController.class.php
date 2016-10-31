@@ -4,6 +4,7 @@ use Think\Exception;
 
 class ExcelController extends AdminController
 {
+    const MONTHLY_ORDER = 30;
     public function test(){
 
         $param = array(
@@ -122,7 +123,9 @@ class ExcelController extends AdminController
                 continue;
             }
             $param = $this->getSubStore($dataSet[4] ,$group_id );
-            $balancing = $this->getBalancing($dataSet[6],$dataSet[8]);
+
+            $type = $this->getRule($dataSet[2]);
+            $balancing = $this->getBalancing($dataSet[6],$dataSet[8],$type);
             $arr[] = array(
                 "in_out_date" => $dataSet[1],
                 "customer_code" => $dataSet[2],
@@ -155,6 +158,22 @@ class ExcelController extends AdminController
 		@unlink($filename);
 		$this->success("数据上传成功！");
 	}
+    private function getRule($customer_code){
+       // $customer_code= "43060100374000";
+        $month = date("Y-m", strtotime("-1 month"));
+        $param['month'] = $month;
+        $param['customer_code'] = $customer_code;
+        $result = M("Send_count_customer")->field("num")->where($param)->find();
+        if(count($result) <= 0){
+            return 0;
+        }
+        if($result['num'] >= self::MONTHLY_ORDER){
+            return 1;
+        }else{
+            return 0;
+        }
+
+    }
     private function saveData($db, $param, $filename)
     {
         //当发生异常的时候数据回滚，看以下实例
@@ -169,28 +188,37 @@ class ExcelController extends AdminController
             }
         }
     }
-    private function getBalancing($province,$weight){
+    private function getBalancing($province,$weight,$type){
         $weight = $weight / 1000;
         $param['name'] = $province;
         $pro = M("Province")->field("id")->where($param)->find();
         if(count($pro) <= 0){
             $this->error("没有找到省份！");
         }
-        $weight_rule = M("Province_attr")->field("first_weight,second_weight,three_weight")->where("province_id = ".$pro["id"])->find();
-        $charge_rule = M("Charge")->field("first_charge,second_charge,three_charge")->where("province_id = ".$pro["id"])->find();
+        $weight_rule = M("Province_attr")->field("first_weight,second_weight,three_weight,first_weight_s,three_weight_s")->where("province_id = ".$pro["id"])->find();
+        $charge_rule = M("Charge")->field("first_charge,second_charge,three_charge,first_charge_s,three_charge_s")->where("province_id = ".$pro["id"])->find();
         if(count($weight_rule) <= 0 || count($charge_rule) <= 0){
             $this->error("请补全相应的邮费规则！");
         }
         $balancing = 0;
-        if($weight_rule['first_weight'] >= $weight ){
-            $balancing = $charge_rule['first_charge'];
-        }else if($weight_rule['second_weight'] >= $weight){
-            $balancing = $charge_rule['second_charge'];
-        }else{
-            $more_weight = $weight - $weight_rule['first_weight'];
-            $balancing = ceil($more_weight / $weight_rule['three_weight']) * $charge_rule['three_charge'] + $charge_rule['first_charge'];
-        }
+        if( $type == 0){
+            if($weight_rule['first_weight'] >= $weight ){
+                $balancing = $charge_rule['first_charge'];
+            }else if($weight_rule['second_weight'] >= $weight){
+                $balancing = $charge_rule['second_charge'];
+            }else{
+                $more_weight = $weight - $weight_rule['first_weight'];
+                $balancing = ceil($more_weight / $weight_rule['three_weight']) * $charge_rule['three_charge'] + $charge_rule['first_charge'];
+            }
+        }else if( $type == 1){
+            if($weight_rule['first_weight_s'] >= $weight ){
+                $balancing = $charge_rule['first_charge_s'];
+            }else{
+                $more_weight = $weight - $weight_rule['first_weight_s'];
+                $balancing = ceil($more_weight / $weight_rule['three_weight_s']) * $charge_rule['three_charge_s'] + $charge_rule['first_charge_s'];
+            }
 
+        }
        return $balancing;
     }
     private function getSubStore($sub_name ,$group_id ){

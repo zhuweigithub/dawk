@@ -25,8 +25,9 @@ class ReadWriteDataController extends AdminController
 	public function configure()
 	{
 		$Model  = M();
-		$sql    = "select a.id ,a.zone_code,a.short_name,a.name,b.first_charge,b.second_charge,b.three_charge,c.first_weight,c.second_weight,c.three_weight
-         from t_province as a left join t_charge as b on a.id= b.province_id left join t_province_attr as c  on a.id = c.province_id";
+		$sql    = "select a.id ,a.zone_code,a.short_name,a.name,b.first_charge,b.second_charge,b.three_charge,b.first_charge_s,b.three_charge_s,
+                    c.first_weight,c.second_weight,c.three_weight,c.first_weight_s,c.three_weight_s
+                    from t_province as a left join t_charge as b on a.id= b.province_id left join t_province_attr as c  on a.id = c.province_id";
 		$result = $Model->query($sql);
 		$this->assign("result", $result);
 		$this->display();
@@ -111,6 +112,8 @@ class ReadWriteDataController extends AdminController
 		$first         = $_POST['first'];
 		$second        = $_POST['second'];
 		$three         = $_POST['three'];
+		$first_s       = $_POST['first_s'];
+		$three_s       = $_POST['three_s'];
 		$first_arr     = explode('/', $first);
 		$first_charge  = $first_arr[0];
 		$first_weight  = $first_arr[1];
@@ -120,6 +123,14 @@ class ReadWriteDataController extends AdminController
 		$three_arr     = explode('/', $three);
 		$three_charge  = $three_arr[0];
 		$three_weight  = $three_arr[1];
+
+
+        $first_s_arr     = explode('/', $first_s);
+        $first_s_charge  = $first_s_arr[0];
+        $first_s_weight  = $first_s_arr[1];
+        $three_s_arr     = explode('/', $three_s);
+        $three_s_charge  = $three_s_arr[0];
+        $three_s_weight  = $three_s_arr[1];
 		$province      = array(
 			"id"         => $id,
 			"code"       => $code,
@@ -134,7 +145,9 @@ class ReadWriteDataController extends AdminController
 				"province_id"   => $id,
 				"first_charge"  => $first_charge,
 				"second_charge" => $second_charge,
-				"three_charge"  => $three_charge
+				"three_charge"  => $three_charge,
+				"first_charge_s" => $first_s_charge,
+				"three_charge_s"  => $three_s_charge
 
 			);
 			$dbCharge->add($charge);
@@ -144,7 +157,9 @@ class ReadWriteDataController extends AdminController
 				"province_id"   => $id,
 				"first_charge"  => $first_charge,
 				"second_charge" => $second_charge,
-				"three_charge"  => $three_charge
+				"three_charge"  => $three_charge,
+                "first_charge_s" => $first_s_charge,
+                "three_charge_s"  => $three_s_charge
 			);
 			$dbCharge->save($charge);
 		}
@@ -156,7 +171,9 @@ class ReadWriteDataController extends AdminController
 				"province_id"   => $id,
 				"first_weight"  => $first_weight,
 				"second_weight" => $second_weight,
-				"three_weight"  => $three_weight
+				"three_weight"  => $three_weight,
+                "first_weight_s" => $first_s_weight,
+                "three_weight_s"  => $three_s_weight
 
 			);
 			$dbProvinceAttr->add($attr);
@@ -166,7 +183,9 @@ class ReadWriteDataController extends AdminController
 				"province_id"   => $id,
 				"first_weight"  => $first_weight,
 				"second_weight" => $second_weight,
-				"three_weight"  => $three_weight
+				"three_weight"  => $three_weight,
+                "first_weight_s" => $first_s_weight,
+                "three_weight_s"  => $three_s_weight
 			);
 			$dbProvinceAttr->save($attr);
 		}
