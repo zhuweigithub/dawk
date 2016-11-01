@@ -8,6 +8,11 @@
     <div class="cf">
         <div class="fl">
 
+			导出资费明细：
+			<input type="text" name="start_time" class="text input time" value="" placeholder="请选择时间" />
+			<input type="text" name="end_time" class="text input time" value="" placeholder="请选择时间" />
+			<button class="btn" onClick="originalExport()" style="width: 100%">导出Excel</button><br/>
+
             <label class="item-label">显示：<span class="check-tips"></span></label>
 
             <select id="task_stuts" name="task_stuts" style="width:120px">
@@ -62,10 +67,42 @@
         <button class="btn" onClick="exportExcel()" style="width: 100%">导出Excel</button>
 
     </div>
+
+
 </block>
 
 <block name="script">
+
+	<link href="__STATIC__/datetimepicker/css/datetimepicker.css" rel="stylesheet" type="text/css">
+	<php>if(C('COLOR_STYLE')=='blue_color') echo '<link href="__STATIC__/datetimepicker/css/datetimepicker_blue.css" rel="stylesheet" type="text/css">';</php>
+	<link href="__STATIC__/datetimepicker/css/dropdown.css" rel="stylesheet" type="text/css">
+	<script type="text/javascript" src="__STATIC__/datetimepicker/js/bootstrap-datetimepicker.min.js"></script>
+	<script type="text/javascript" src="__STATIC__/datetimepicker/js/locales/bootstrap-datetimepicker.zh-CN.js" charset="UTF-8"></script>
     <script type="text/javascript">
+		$(function(){
+			$('.time').datetimepicker({
+				format: 'yyyy-mm-dd',
+				language:"zh-CN",
+				minView:2,
+				autoclose:true
+			});
+			showTab();
+		});
+
+		function originalExport(){
+			var start_time = $("input[name=start_time]").val();
+			var end_time = $("input[name=end_time]").val();
+			if(start_time == ""){
+				alert("请选开始时间！");return;
+			}
+			if(end_time == ""){
+				alert("请选择结束时间！");return;
+			}
+			if(start_time > end_time){
+				alert("开始时间不能大于结束时间！");return;
+			}
+			window.location.href = "index.php?s=/Excel/originalExport/start_time/"+ start_time +"/end_time/"+end_time;
+		}
         var month;
         function exportExcel(){
             var type = $("#task_stuts").find("option:selected").val();

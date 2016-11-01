@@ -387,4 +387,86 @@ class ExcelController extends AdminController
 		$xlsWriter->save("php://output");
 		exit;
 	}
+	public function getDetailList($start_time,$end_time){
+
+		$map['in_out_date'] = array('elt',$start_time);
+		$map['in_out_date'] = array('egt',$end_time);
+		$result = M("Send_detail")->field("id,express_number,in_out_date,customer_name,sub_store,send_province,send_city,weight,post_money,balancing,(balancing-post_money) as gap_money")->where($map)->select();
+        return $result;
+	}
+
+	public function originalExport()
+	{
+		$start_time = $_GET['start_time'];
+		$end_time = $_GET['end_time'];
+		/*
+		$start_time = "2016-10-03 00:00:00";
+		$end_time = "2016-10-07 00:00:00";*/
+		$result = $this->getDetailList($start_time , $end_time);
+		$total = count($result);
+		if ($total > 1000000) {
+			exit('最多导出1000000条订单');
+		}
+
+		ini_set('memory_limit', '128M');
+		require_once 'Application/Admin/Lib/Org/Util/PHPExcel.php';
+		$excel     = new \PHPExcel();
+		$xlsWriter = new \PHPExcel_Writer_Excel5($excel);
+
+			$cells = array(
+				'A' => array('title' => '序号', 'width' => '30', 'value_key' => 'id'),
+				'B' => array('title' => '收寄日期', 'width' => '15', 'value_key' => 'in_out_date' ,'format' => 'date'),
+				'C' => array('title' => '大宗客户', 'width' => '20', 'value_key' => 'customer_name','format' => 'string'),
+				'D' => array('title' => '分仓', 'width' => '20', 'value_key' => 'sub_store','format' => 'string'),
+				'E' => array('title' => '邮件号码', 'width' => '20', 'value_key' => 'express_number','format' => 'string'),
+				'F' => array('title' => '寄达省', 'width' => '20', 'value_key' => 'send_province','format' => 'string'),
+				'G' => array('title' => '寄达市', 'width' => '20', 'value_key' => 'send_city','format' => 'string'),
+				'H' => array('title' => '重量(克)', 'width' => '20', 'value_key' => 'weight'),
+				'I' => array('title' => '总邮资(元)', 'width' => '20', 'value_key' => 'post_money'),
+				'J' => array('title' => '结算资费', 'width' => '20', 'value_key' => 'balancing'),
+				'K' => array('title' => '资费差额', 'width' => '20', 'value_key' => 'gap_money'),
+				'L' => array('title' => '修改资费', 'width' => '20', 'value_key' => ''),
+				'M' => array('title' => '修改后差额', 'width' => '20', 'value_key' => '')
+			);
+		$row = 1;
+		foreach ($cells as $key => $value) {
+			$excel->getActiveSheet()->setCellValue($key . $row, $value['title']);
+			if (isset($value['width'])) {
+				$excel->getActiveSheet()->getColumnDimension($key)->setWidth($value['width']);
+			} else {
+				$excel->getActiveSheet()->getColumnDimension($key)->setAutoSize(true);
+			}
+			$excel->getActiveSheet()->getStyle($key . $row)->getFill()->setFillType(\PHPExcel_Style_Fill::FILL_SOLID);
+			$excel->getActiveSheet()->getStyle($key . $row)->getFill()->getStartColor()->setARGB('FF808080');
+		}
+
+		foreach ($result as $key=>$items) {
+			++$row;
+			foreach ($cells as $key => $value) {
+				if (is_string($value['value_key'])) {
+					if ($value['format'] == 'string') {
+						$excel->getActiveSheet()->setCellValueExplicit($key . $row, $items[$value['value_key']], \PHPExcel_Cell_DataType::TYPE_STRING);
+					} elseif ($value['format'] == 'date') {
+						$datetime = !empty($items[$value['value_key']]) ? str_replace("00:00:00", "", $items[$value['value_key']])  : '';
+						$excel->getActiveSheet()->setCellValue($key . $row, $datetime);
+					} else {
+						$tmpValue = $items[$value['value_key']];
+						$excel->getActiveSheet()->setCellValue($key . $row, $tmpValue);
+					}
+				}
+			}
+		}
+		$outputFileName = $start_time .'—'. $end_time .'系统资费与实际资费明细.xls';
+		header("Content-Type: application/force-download");
+		header("Content-Type: application/octet-stream");
+		header("Content-Type: application/download");
+		header('Content-Disposition:inline;filename="' . $outputFileName . '"');
+		header("Content-Transfer-Encoding: binary");
+		header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
+		header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
+		header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+		header("Pragma: no-cache");
+		$xlsWriter->save("php://output");
+		exit;
+	}
 }
