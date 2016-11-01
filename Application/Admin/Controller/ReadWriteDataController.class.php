@@ -32,35 +32,66 @@ class ReadWriteDataController extends AdminController
 		$this->assign("result", $result);
 		$this->display();
 	}
-
+     public function countData(){
+        $result = M("Send_month")->select();
+         $this->assign("result",$result);
+         $this->display();
+     }
 	public function ReadData()
 	{
-
-        $result = M("Send_month")->select();
-		$this->assign("result", $result);
-		$this->display();
+        $start_time = $_GET['start_time'] ?  $_GET['start_time'] : "2016-10-01";
+        $end_time = $_GET['end_time'] ? $_GET['end_time'] : "2016-10-31";
+        $map['in_out_date'][] = array('egt',$start_time);
+        $map['in_out_date'][] = array('elt',$end_time);
+        if(!empty($_GET['customer_name'])){
+            $map['customer_name'] = array('like',"%".$_GET['customer_name']."%");
+        }
+        $field = "id,express_number,in_out_date,in_out_org_name,customer_name,sub_store,send_province,send_city,
+        weight,post_money,balancing,(balancing-post_money) as gap_money,team_name,team_member_name";
+        $list   = $this->lists('Send_detail', $map ,"in_out_date",$field);
+        int_to_string($list);
+        $map['start_time'] = $start_time;
+        $map['end_time'] = $end_time;
+        $map['customer_name'] = $_GET['customer_name'];
+        $this->assign('param',$map);
+        $this->assign('result', $list);
+        $this->meta_title = '数据总览';
+        $this->display();
 
 	}
+    public function search_customer(){
+        $tableName = "send_count_date_customer";
+        $param['customer_name'] = array('like',"%".$_GET['customer_name']."%");
+        $result = M($tableName)->field("customer_name")->where($param)->select();
+        echo json_encode($result);
+    }
     private function isAdmin(){
         return intval(session('user_auth')['uid']) === C('USER_ADMINISTRATOR');
     }
     public function getSendCount(){
         $month = $_POST['month'];
         $type = $_POST['type'];
+        $customer_name = $_POST['customer_name'];
         $param['month'] = $month;
         if(!$this->isAdmin()){
             $result = M("Member")->field("area")->where("uid = " .session('user_auth')['uid'])->find();
             $param['team_id'] = $result['area'];
         }
-        if($type == 1 && $this->isAdmin()){
-            $tableName = "send_count_date";
-        }else if($type == 1 && !$this->isAdmin()){
-            $tableName = "send_count_date_group";
+        if($customer_name){
+            $tableName = "send_count_date_customer";
+            $param['customer_name'] = array('like',"%".$_GET['customer_name']."%");
+        }else{
+            if($type == 1 && $this->isAdmin()){
+                $tableName = "send_count_date";
+            }else if($type == 1 && !$this->isAdmin()){
+                $tableName = "send_count_date_group";
+            }
+            if($type == 2 ){
+                $tableName = "send_count_customer";
+            }
         }
-        if($type == 2 ){
-            $tableName = "send_count_customer";
-        }
-        $result = M($tableName)->where($param)->limit(0,50)->select();
+
+        $result = M($tableName)->where($param)->select();
         echo json_encode($result);
     }
 

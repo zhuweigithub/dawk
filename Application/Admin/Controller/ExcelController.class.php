@@ -272,19 +272,24 @@ class ExcelController extends AdminController
     private function isAdmin(){
         return intval(session('user_auth')['uid']) === C('USER_ADMINISTRATOR');
     }
-    public function getSendList($month,$type){
+    public function getSendList($month,$type,$customer_name){
         $param['month'] = $month;
         if(!$this->isAdmin()){
             $result = M("Member")->field("area")->where("uid = " .session('user_auth')['uid'])->find();
             $param['team_id'] = $result['area'];
         }
-        if($type == 1 && $this->isAdmin()){
-            $tableName = "send_count_date";
-        }else if($type == 1 && !$this->isAdmin()){
-            $tableName = "send_count_date_group";
-        }
-        if($type == 2 ){
-            $tableName = "send_count_customer";
+        if($customer_name){
+            $tableName = "send_count_date_customer";
+            $param['customer_name'] = array('like',"%".$customer_name."%");
+        }else{
+            if($type == 1 && $this->isAdmin()){
+                $tableName = "send_count_date";
+            }else if($type == 1 && !$this->isAdmin()){
+                $tableName = "send_count_date_group";
+            }
+            if($type == 2 ){
+                $tableName = "send_count_customer";
+            }
         }
         $result = M($tableName)->where($param)->select();
         $num_count = 0;
@@ -317,7 +322,8 @@ class ExcelController extends AdminController
 	{
         $month = $_GET['month'];
         $type = $_GET['type'];
-        $result = $this->getSendList($month,$type);
+        $customer_name = $_GET['customer_name'];
+        $result = $this->getSendList($month,$type,$customer_name);
         $total = count($result);
 		if ($total > 1000000) {
 			exit('最多导出1000000条订单');
@@ -327,23 +333,33 @@ class ExcelController extends AdminController
 		require_once 'Application/Admin/Lib/Org/Util/PHPExcel.php';
 		$excel     = new \PHPExcel();
 		$xlsWriter = new \PHPExcel_Writer_Excel5($excel);
-       if($type == 1){
-           $cells = array(
-               'A' => array('title' => '收寄日期', 'width' => '30', 'value_key' => 'in_out_date','format' => 'date'),
-               'B' => array('title' => '收寄件数', 'width' => '15', 'value_key' => 'num'),
-               'C' => array('title' => '系统结算', 'width' => '20', 'value_key' => 'post_money'),
-               'D' => array('title' => '实际结算', 'width' => '20', 'value_key' => 'balancing'),
-               'E' => array('title' => '结算差额', 'width' => '20', 'value_key' => 'gap_money')
-           );
-       }else{
-           $cells = array(
-               'A' => array('title' => '客户名', 'width' => '25', 'value_key' => 'customer_name', 'format' => 'string'),
-               'B' => array('title' => '收寄件数', 'width' => '15', 'value_key' => 'num'),
-               'C' => array('title' => '系统结算', 'width' => '20', 'value_key' => 'post_money'),
-               'D' => array('title' => '实际结算', 'width' => '20', 'value_key' => 'balancing'),
-               'E' => array('title' => '结算差额', 'width' => '20', 'value_key' => 'gap_money')
-           );
-       }
+        if($customer_name){
+            $cells = array(
+                'A' => array('title' => '收寄日期', 'width' => '30', 'value_key' => 'in_out_date','format' => 'date'),
+                'B' => array('title' => '收寄件数', 'width' => '15', 'value_key' => 'num'),
+                'C' => array('title' => '系统结算', 'width' => '20', 'value_key' => 'post_money'),
+                'D' => array('title' => '实际结算', 'width' => '20', 'value_key' => 'balancing'),
+                'E' => array('title' => '结算差额', 'width' => '20', 'value_key' => 'gap_money')
+            );
+        }else{
+           if($type == 1){
+               $cells = array(
+                   'A' => array('title' => '收寄日期', 'width' => '30', 'value_key' => 'in_out_date','format' => 'date'),
+                   'B' => array('title' => '收寄件数', 'width' => '15', 'value_key' => 'num'),
+                   'C' => array('title' => '系统结算', 'width' => '20', 'value_key' => 'post_money'),
+                   'D' => array('title' => '实际结算', 'width' => '20', 'value_key' => 'balancing'),
+                   'E' => array('title' => '结算差额', 'width' => '20', 'value_key' => 'gap_money')
+               );
+           }else{
+               $cells = array(
+                   'A' => array('title' => '客户名', 'width' => '25', 'value_key' => 'customer_name', 'format' => 'string'),
+                   'B' => array('title' => '收寄件数', 'width' => '15', 'value_key' => 'num'),
+                   'C' => array('title' => '系统结算', 'width' => '20', 'value_key' => 'post_money'),
+                   'D' => array('title' => '实际结算', 'width' => '20', 'value_key' => 'balancing'),
+                   'E' => array('title' => '结算差额', 'width' => '20', 'value_key' => 'gap_money')
+               );
+           }
+        }
 		$row = 1;
 
 		foreach ($cells as $key => $value) {
@@ -374,7 +390,7 @@ class ExcelController extends AdminController
                 }
 			}
 		}
-		$outputFileName = $month .'客户收寄统计报表.xls';
+		$outputFileName = $month . $customer_name.'收寄统计报表.xls';
 		header("Content-Type: application/force-download");
 		header("Content-Type: application/octet-stream");
 		header("Content-Type: application/download");
@@ -387,11 +403,15 @@ class ExcelController extends AdminController
 		$xlsWriter->save("php://output");
 		exit;
 	}
-	public function getDetailList($start_time,$end_time){
-
-		$map['in_out_date'] = array('elt',$start_time);
-		$map['in_out_date'] = array('egt',$end_time);
-		$result = M("Send_detail")->field("id,express_number,in_out_date,customer_name,sub_store,send_province,send_city,weight,post_money,balancing,(balancing-post_money) as gap_money")->where($map)->select();
+	public function getDetailList($start_time,$end_time,$customer_name){
+        if(!empty($customer_name)){
+            $map['customer_name'] = array('like',"%".$customer_name."%");
+        }
+		$map['in_out_date'][] = array('egt',$start_time);
+		$map['in_out_date'][] = array('elt',$end_time);
+		$result = M("Send_detail")->field("id,express_number,in_out_date,customer_name,sub_store,send_province,send_city,weight,post_money,balancing,(balancing-post_money) as gap_money")
+                                  ->where($map)
+                                  ->select();
         return $result;
 	}
 
@@ -399,10 +419,8 @@ class ExcelController extends AdminController
 	{
 		$start_time = $_GET['start_time'];
 		$end_time = $_GET['end_time'];
-		/*
-		$start_time = "2016-10-03 00:00:00";
-		$end_time = "2016-10-07 00:00:00";*/
-		$result = $this->getDetailList($start_time , $end_time);
+		$customer_name = $_GET['customer_name'];
+		$result = $this->getDetailList($start_time , $end_time,$customer_name);
 		$total = count($result);
 		if ($total > 1000000) {
 			exit('最多导出1000000条订单');

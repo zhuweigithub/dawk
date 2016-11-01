@@ -1,0 +1,145 @@
+<extend name="Public/base"/>
+
+<block name="body">
+    <!-- 标题栏 -->
+    <div class="main-title">
+        <h2>收寄数据总览</h2>
+    </div>
+    <div class="cf">
+        <div class="fl">
+
+            <label class="item-label">显示：<span class="check-tips"></span></label>
+
+            <select id="task_stuts" name="task_stuts" style="width:120px">
+                <option value="1"  <?php if( $stuts == 1)echo 'selected'; else echo ''; ?>>按天数统计</option>
+                <option value="2"  <?php if( $stuts == 2)echo 'selected'; else echo ''; ?>>按顾客统计</option>
+            </select>
+            月份：
+            <select id="month" name="month" style="width:120px">
+                <volist name="result" id="vo">
+                    <option>{$vo.month}</option>
+                    </tr>
+                </volist>
+            </select>
+            <input type="text" name="customer_name" class="text input"  placeholder="请输入客户名" style="width: 150px;margin-left:30px "  />
+            <button class="btn" id="search" >查询</button>
+          <!-- onchange="search_customer()" <select id="customers" name="customers" style="width:120px;display: none">
+            </select>-->
+
+        </div>
+    </div>
+    <!--<div style="margin-top:0.5rem;width: 100%;height: 1.5rem;background-color: #fffc59;border: 1px dotted #1115ff">
+        <b>说明：</b>最多显示50条记录，需要查看更多请导出excel。
+    </div>-->
+    <style>
+        .nav-select tr{ cursor: pointer}
+    </style>
+    <div class="data-table table-striped" style="width: 60%;float: left;">
+        <table>
+            <thead>
+            <tr class="head_name">
+                <th width="50" >ID</th>
+                <th width="100">收寄日期</th>
+                <th width="60">包裹数量</th>
+                <th width="60">系统资费</th>
+                <th width="60">实际资费</th>
+                <th width="60">资费差额</th>
+            </tr>
+            </thead>
+            <tbody id="count_list">
+            <tr >
+                <td colspan='6' style='text-align: center;color:green'>请选择筛选条件！</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div style="width: 10%;float: left;margin-left:5%;margin-top:3.5rem">
+        <button class="btn" onClick="exportExcel()" style="width: 100%">导出Excel</button>
+
+    </div>
+
+
+</block>
+
+<block name="script">
+<script type="text/javascript">
+
+    /*function search_customer(){
+
+        var customer_name =$("input[name=customer_name]").val();
+
+        $.post("index.php?s=/ReadWriteData/search_customer.html",{customer_name:customer_name},function(data){
+            data = eval("(" + data + ")");
+
+            if(data){
+                $("#customers").show();
+                var str = '';
+                for(var i = 0 ; i < data.length ; i++){
+                    str += '<option value="'+data[i].customer_name+'">'+data[i].customer_name+'</option>';
+                }
+                $("#customers").html(str);
+            }
+
+        });
+    }*/
+        var month;
+        function exportExcel(){
+            var type = $("#task_stuts").find("option:selected").val();
+            if(month == ""){
+                alert("请选择导出的月份！");return;
+            }
+            if(!type){
+                alert("请选择导出类型！");return;
+            }
+            var customer_name =$("input[name=customer_name]").val();
+            window.location.href = "index.php?s=/Excel/exportExcel/month/"+ month +"/type/"+type+"/customer_name/"+customer_name;
+        }
+        $("#search").on("click",function(){
+
+           month = $("#month").find("option:selected").html();
+
+            var type = $("#task_stuts").find("option:selected").val();
+            var customer_name =$("input[name=customer_name]").val();
+
+            $.post("index.php?s=/ReadWriteData/getSendCount.html",{month : month , type : type,customer_name:customer_name},function(data){
+                data = eval("("+ data +")");
+                if(data){
+                    var str = "";
+                    for(var i = 0 ; i < data.length ; i++){
+                        if(customer_name != ""){
+
+                            data[i].in_out_date = data[i].in_out_date.replace("00:00:00","");
+                            str += '<tr><td>' + data[i].id + '</td><td>' + data[i].customer_name + '</td><td>' + data[i].in_out_date + '</td><td>' + data[i].num + '</td>' +
+                                    '<td>' + data[i].post_money + '</td><td>' + data[i].balancing + '</td><td>' + data[i].gap_money + '</td></tr>';
+                        }else{
+                            if(type == 1){
+                                $(".head_name").find("th").eq(1).html("收寄日期");
+                                data[i].in_out_date = data[i].in_out_date.replace("00:00:00","");
+                                str += '<tr><td>' + data[i].id + '</td><td>' + data[i].in_out_date + '</td><td>' + data[i].num + '</td>' +
+                                        '<td>' + data[i].post_money + '</td><td>' + data[i].balancing + '</td><td>' + data[i].gap_money + '</td></tr>';
+                            }else{
+                                $(".head_name").find("th").eq(1).html("顾客");
+                                str += '<tr><td>' + data[i].id + '</td><td>' + data[i].customer_name + '</td><td>' + data[i].num + '</td>' +
+                                        '<td>' + data[i].post_money + '</td><td>' + data[i].balancing + '</td><td>' + data[i].gap_money + '</td></tr>';
+                            }
+                        }
+                    }
+                    if(customer_name != ""){
+                        if( $(".head_name").find("th").eq(1).html() != "客户名" ){
+                            $(".head_name").find("th").eq(1).html("收寄日期");
+                            $(".head_name").find("th").eq(0).after("<th>客户名</th>");
+                        }
+
+                    }
+                    $("#count_list").html(str);
+                }else{
+                    $("#count_list").html("<tr ><td colspan='6' style='text-align: center;color:red'>没有找到记录！</td></tr>");
+                }
+
+
+            });
+        });
+
+    </script>
+
+</block>
