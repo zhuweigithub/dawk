@@ -2,6 +2,10 @@
 namespace Admin\Controller;
 class ReadWriteDataController extends AdminController
 {
+
+	public function test(){
+		$this->display();
+	}
 	/**
 	 * 导入数据
 	 */

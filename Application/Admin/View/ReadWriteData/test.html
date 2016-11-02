@@ -1,0 +1,15 @@
+<html>
+<head></head>
+<body>
+<form action="{:U('/Excel/inputCsv')}" method="post" enctype="multipart/form-data"  class="form-horizontal">
+	<div class="form-item">
+		<label class="item-label">选择Excel文件<span class="check-tips"></span></label>
+		<div class="controls">
+
+			<input id="doc-form-file" type="file" name="file"  multiple>
+		</div>
+	</div>
+	<button type="submit" class="btn submit-btn" target-form="form-horizontal">上 传</button>
+</form>
+</body>
+</html>

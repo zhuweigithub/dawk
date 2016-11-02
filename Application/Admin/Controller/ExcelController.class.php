@@ -79,13 +79,46 @@ class ExcelController extends AdminController
 				$base_path = str_replace('/Application/Admin/Controller', '', $base_path) . '/';
 				$path      = $base_path . $uploads . $info['savepath'] . $info['savename'];
 				$this->importExcel($tableName, $path ,$group_id);
-
 			}
 		} else {
 			$this->error("请选择上传的文件");
 		}
 	    }
     }
+
+	public function inputCsv(){
+
+		header("Content-type: text/html;charset=utf-8"); //设置页面内容是html编码格式是utf-8
+		if (!empty($_FILES['file']['name'])) {
+			$uploads          = "Public/Uploads/";
+			$upload           = new \Think\Upload(); // 实例化上传类
+			$upload->maxSize  = 5242880; // 设置附件上传大小
+			$upload->exts     = array('csv'); // 设置附件上传类型
+			$upload->rootPath = $uploads; // 设置附件上传根目录
+			$upload->subName  = array('date', 'Ymd');
+			// 上传单个文件
+			$info = $upload->uploadOne($_FILES['file']);
+			if (!$info) { // 上传错误提示错误信息
+				$this->error($upload->getError());
+			} else { //上传Excel成功
+				$base_path = str_replace('\\', '/', realpath(dirname(__FILE__) . '/'));
+				$base_path = str_replace('/Application/Admin/Controller', '', $base_path) . '/';
+				$path      = $base_path . $uploads . $info['savepath'] . $info['savename'];
+				//$this->importExcel($tableName, $path ,$group_id);
+				echo $path;exit;
+				$file = fopen($path,"r");
+				while(! feof($file))
+				{
+					dump(fgetcsv($file));
+				}
+				fclose($file);
+			}
+		} else {
+			$this->error("请选择上传的文件");
+		}
+
+
+}
 	public function importExcel($tableName, $filename ,$group_id)
 	{
 
@@ -100,7 +133,6 @@ class ExcelController extends AdminController
 		$sheet         = $PHPExcel->getSheet(0); // 读取第一個工作表
 		$highestRow    = $sheet->getHighestRow(); // 取得总行数
 		$highestColMum = $sheet->getHighestColumn(); // 取得总列数
-
         /*创建回滚机制*/
         if($tableName == 'send_detail'){
             $db = M($tableName);
@@ -487,4 +519,5 @@ class ExcelController extends AdminController
 		$xlsWriter->save("php://output");
 		exit;
 	}
+
 }
