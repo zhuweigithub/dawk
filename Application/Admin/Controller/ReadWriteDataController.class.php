@@ -50,7 +50,7 @@ class ReadWriteDataController extends AdminController
         if(!empty($_GET['customer_name'])){
             $map['customer_name'] = array('like',"%".$_GET['customer_name']."%");
         }
-        $field = "id,express_number,in_out_date,in_out_org_name,customer_name,sub_store,send_province,send_city,
+        $field = "id,express_number,in_out_date,in_out_org_name,customer_name,customer_code,sub_store,send_province,send_city,
         weight,post_money,balancing,(balancing-post_money) as gap_money,team_name,team_member_name";
         $list   = $this->lists('Send_detail', $map ,"in_out_date",$field);
         int_to_string($list);

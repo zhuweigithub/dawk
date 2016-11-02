@@ -10,7 +10,7 @@
 	<!-- 应用列表 -->
 
 	<form action="{:U('/Excel/importExp')}" method="post" enctype="multipart/form-data"  class="form-horizontal">
-			<div class="form-item">
+			<!--<div class="form-item">
 				<label class="item-label">请选择库<span class="check-tips">（注意：选错库会导致数据导入失败）</span></label>
 				<div class="controls">
 					<select name="table_name" >
@@ -32,7 +32,7 @@
                     </select>
                 </div>
             </div>
-        </if>
+        </if>-->
 
 		<div class="form-item">
 			<label class="item-label">选择Excel文件<span class="check-tips">（注意：Excel必须严格按照模版规则）</span></label>
@@ -49,5 +49,28 @@
 			</div>
 		</div>
 	</form>
+
+    <div id="model1" style="display: none">
+      <div></div>
+    </div>
+
 	<!-- /应用列表 -->
+</block>
+<block name="script">
+    <script type="text/javascript">
+        setTimeout("run()",3000);
+        function run(){
+            $.post("index.php?s=/Excel/ajaxPlan",{},function(data){
+                data = eval("("+ data +")");
+                if( data.count > 0 ){
+                    $("#model1").show();
+                    $("#model1").find("div").html(data.run_row);
+                }else if( data.count > 0 && data.count == data.run_row){
+                    alert("上传完成！");
+                }
+            });
+        }
+    </script>
+
+
 </block>

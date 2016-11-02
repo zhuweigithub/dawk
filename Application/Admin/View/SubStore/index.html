@@ -1,0 +1,209 @@
+<extend name="Public/base"/>
+
+<block name="body">
+    <div class="main-title">
+        <h2>分仓配置</h2>
+    </div>
+
+    <div class="cf">
+        <div class="fl">
+            <a class="btn" onclick="add_store()">添加分仓</a>
+
+        </div>
+
+        <!-- 高级搜索 -->
+        <div class="search-form fr cf" style="margin-right: 45%">
+            <div class="sleft">
+                <input type="text" name="search_key" class="search-input" value="{:I('search_key')}" placeholder="请输入分仓或者客户名">
+                <a class="sch-btn" href="javascript:;" id="search" url="{:U('index')}"><i class="btn-search"></i></a>
+            </div>
+        </div>
+    </div>
+    <div style="width:35%;float:right;border:1px solid rgba(255, 251, 129, 0.49);height: 500px;background: rgba(248, 255, 220, 0.29);margin-right:5%;margin-top: 1rem  ">
+        <div id="add_sub_store" style="display: none">
+            <label style="font-weight: bold;font-size: 20px;display: block;">添加分仓:</label>
+            <div class="controls" style="margin-top: 1rem">
+                分仓名： <input type="text" class="text input" name="store_name" value="" autocomplete="off"><br><br>
+                客户名： <input type="text" class="text input" name="customer_name" value="" autocomplete="off">
+            </div>
+            <button type="button" class="btn add_store" style="margin-top:1rem;margin-left:5rem" >添 加</button>
+        </div>
+
+        <div id="edit_sub_store" style="display: none">
+            <label style="font-weight: bold;font-size: 20px;display: block;">编辑分仓:</label>
+            <div class="controls" style="margin-top: 1rem">
+                分仓名： <input type="text" class="text input" name="edit_store_name" value="" autocomplete="off"><br><br>
+                客户名： <input type="text" class="text input" name="edit_customer_name" value="" autocomplete="off">
+            </div>
+            <button type="button" class="btn edit_store" style="margin-top:1rem;margin-left:5rem" >修 改</button>
+        </div>
+
+        <style>
+            .member_list div{
+                height:40px;width:120px;display: inline-block;padding: 10px 0;
+            }
+        </style>
+        <div id="band_member"  style="display: none" >
+            选择下面的会员绑定到 <span class="sub_store" style="color: red;"></span> 分仓<br>
+            <input type="hidden" id="sub_store_id" value=""/>
+            <div class="member_list">
+                <div >加载中...</div>
+            </div>
+            <button type="button" class="btn" style="margin-top:1rem" onclick="band()">绑 定</button>
+        </div>
+    </div>
+
+    <input class="group_id" type="hidden" value="{$group_id}"/>
+    <div class="data-table table-striped" style="width: 55%">
+        <table>
+            <thead>
+            <tr>
+                <th width="50">ID</th>
+                <th width="120">分仓名</th>
+                <th width="120">客户名</th>
+               <!-- <th width="50">状态</th>-->
+                <th width="80">操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            <volist name="result" id="vo">
+                <tr class="show-input_{$vo.id}">
+                    <td>{$vo.id}</td>
+                    <td>{$vo.sub_store_name}</td>
+                    <td>{$vo.customer_name}</td>
+                    <td class="action">
+                        <a  onclick="editSubStore('{$vo.id}')" >编 辑</a> |
+                        <a  onclick="delSubStore('{$vo.id}')" >删 除</a>
+                       <!-- <a  onclick="bandMember(this)">调配仓管</a>-->
+                    </td>
+                </tr>
+            </volist>
+            </tbody>
+        </table>
+    </div>
+</block>
+
+<block name="script">
+    <script type="text/javascript">
+        $("#search").click(function(){
+            var url = $(this).attr('url');
+            var query  = $('.search-form').find('input').serialize();
+            query = query.replace(/(&|^)(\w*?\d*?\-*?_*?)*?=?((?=&)|(?=$))/g,'');
+            query = query.replace(/^&/g,'');
+            if( url.indexOf('?')>0 ){
+                url += '&' + query;
+            }else{
+                url += '?' + query;
+            }
+            window.location.href = url;
+        });
+        //回车搜索
+        $(".search-input").keyup(function(e){
+            if(e.keyCode === 13){
+                $("#search").click();
+                return false;
+            }
+        });
+
+        function delSubStore(id){
+            if(confirm("是否删除此分仓！")){
+                $.post("index.php?s=/ReadWriteData/delSubStore",{store_id : id},function(data){
+                    if(data == 1){
+                        $(".show-input_"+id).remove();
+                    }
+                });
+            }
+        }
+        var edt_id = 0;
+        function editSubStore(id){
+            edt_id = id;
+            $("#add_sub_store").hide();
+            $("#edit_sub_store").show();
+            var sub_store_name = $(".show-input_"+id).find('td').eq(1).html();
+            var customer_name  = $(".show-input_"+id).find('td').eq(2).html();
+            $("input[name=edit_store_name]").val(sub_store_name);
+            $("input[name=edit_customer_name]").val(customer_name);
+        }
+        function add_store(){
+            $("#add_sub_store").show();
+            $("#edit_sub_store").hide();
+        }
+        $(".edit_store").on("click",function(){
+            var sub_store_name = $("input[name=edit_store_name]").val();
+            var customer_name  = $("input[name=edit_customer_name]").val();
+            if(sub_store_name == "" || customer_name == ""){
+                alert("分仓或者客户名不能为空！");return;
+            }
+            $.post("index.php?s=/SubStore/editSubStore",{id : edt_id ,sub_store_name : sub_store_name,customer_name:customer_name},function(data){
+                if(data == 1){
+                    $(".show-input_"+edt_id).find('td').eq(1).html(sub_store_name);
+                    $(".show-input_"+edt_id).find('td').eq(2).html(customer_name);
+                    $("#edit_sub_store").hide(500);
+                }else{
+                    alert("修改失败!");
+                }
+            });
+        });
+
+        $(".add_store").on("click",function(){
+            var store_name = $("input[name=store_name]").val();
+            var customer_name = $("input[name=customer_name]").val();
+            if(store_name == "" || customer_name == ""){
+                alert("分仓或者客户名不能为空！");return;
+            }
+            $.post("index.php?s=/SubStore/addSubStore",{store_name : store_name,customer_name:customer_name},function(data){
+                if(data == 1){
+                    window.location.reload();
+                }
+            });
+        });
+        function band(){
+            var selectVal = $('input[name="member"]:checked ').val();
+            var sub_id =  $("#sub_store_id").val();
+
+            $.post("index.php?s=/ReadWriteData/band",{selectVal : selectVal,sub_id:sub_id},function(data){
+                if(data == 1){
+                    window.location.reload();
+                }
+            });
+        }
+        function bandMember(obj){
+            $("#band_member").show();
+            $("#add_sub_store").hide();
+            var sub_id = $(obj).parents("tr").find("td").eq(0).html();
+            var sub_name = $(obj).parents("tr").find("td").eq(1).html();
+            $(".sub_store").html(sub_name);
+            $("#sub_store_id").val(sub_id);
+            var group_id = $(".group_id").val();
+            $.post("index.php?s=/ReadWriteData/getMember",{group_id : group_id},function(data){
+                if(!data){
+                    alert("没有找到仓管员！");return;
+                }
+                data = eval("(" + data + ")");
+                var str = '';
+                for(var i = 0; i < data.length ;i++){
+                    str += '<div > <input type="radio" name="member" value="'+data[i]['uid']+'" />'+data[i]['nickname']+'</div>';
+                }
+                $(".member_list").html(str);
+            });
+        }
+        function delRule(id){
+            if(confirm("您确定要删除这条记录吗？")){
+                $.post("index.php?s=/ReadWriteData/delRule",{id:id},function(data){
+                    if(data == 1){
+                        $(".show-input_"+id).remove();
+                    }else{
+                        alert("发生未知错误请稍后再试！");
+                    }
+                });
+            }
+        }
+
+        //导航高亮
+        highlight_subnav('{:U('
+        AuthManager / index
+        ')}'
+        )
+        ;
+    </script>
+</block>

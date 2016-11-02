@@ -22,38 +22,43 @@
             <thead>
             <tr class="head_name">
                 <th width="30" >ID</th>
-                <th width="80">快递号</th>
-                <th width="60">客户名</th>
-                <th width="100">机构</th>
-                <th width="60">省份</th>
-                <th width="60">城市</th>
+                <th width="60">收寄日期</th>
+                <th width="60">大宗客户代码</th>
+                <th width="60">大宗客户</th>
+                <th width="60">分仓</th>
+                <th width="80">邮件号码</th>
+               <!-- <th width="100">机构</th>-->
+                <th width="60">寄达省</th>
+                <th width="60">寄达市</th>
                 <th width="40">重量（克）</th>
-                <th width="40">总邮费</th>
+                <th width="40">总邮资（元）</th>
                 <th width="40">结算资费</th>
                 <th width="40">资费差额</th>
-                <th width="60">团队名</th>
-                <th width="60">仓库管理员</th>
-                <th width="60">分仓名</th>
-                <th width="60">收寄日期</th>
+               <!-- <th width="60">团队名</th>
+                <th width="60">仓库管理员</th>-->
+
             </tr>
             </thead>
             <tbody >
             <volist name="result" id="vo">
                 <tr >
                     <td>{$vo.id}</td>
-                    <td>{$vo.express_number}</td>
+                    <td>{$vo.in_out_date|substr=0,10}</td>
+
+                    <td>{$vo.customer_code}</td>
                     <td>{$vo.customer_name}</td>
-                    <td>{$vo.in_out_org_name|substr=0,24}...</td>
+                    <td>{$vo.sub_store}</td>
+                    <td>{$vo.express_number}</td>
+                   <!-- <td>{$vo.in_out_org_name|substr=0,24}...</td>-->
                     <td>{$vo.send_province}</td>
                     <td>{$vo.send_city}</td>
                     <td>{$vo.weight}</td>
                     <td>{$vo.post_money}</td>
                     <td>{$vo.balancing}</td>
                     <td>{$vo.gap_money}</td>
-                    <td>{$vo.team_name}</td>
-                    <td>{$vo.team_member_name}</td>
-                    <td>{$vo.sub_store}</td>
-                    <td>{$vo.in_out_date}</td>
+                   <!-- <td>{$vo.team_name}</td>
+                    <td>{$vo.team_member_name}</td>-->
+
                 </tr>
             </volist>
             </tbody>

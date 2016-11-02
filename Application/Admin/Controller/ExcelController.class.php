@@ -44,9 +44,10 @@ class ExcelController extends AdminController
     }
 	public function importExp()
 	{
-		$tableName = $_POST['table_name'];
+		//$tableName = $_POST['table_name'];
+		$tableName = "send_detail";
 
-        $uid = session('user_auth')['uid'];
+      /*  $uid = session('user_auth')['uid'];
         if(empty($_POST['sub_store'])){
             $param['uid'] = $uid;
             $param['position'] = 1;
@@ -58,7 +59,7 @@ class ExcelController extends AdminController
             }
         }else{
             $group_id = $_POST['sub_store'];
-		$tableName = C("db_table")[$tableName];
+		$tableName = C("db_table")[$tableName];*/
 		if (empty($tableName)) {
 			$this->error("请选择上传的库");
 		}
@@ -78,12 +79,13 @@ class ExcelController extends AdminController
 				$base_path = str_replace('\\', '/', realpath(dirname(__FILE__) . '/'));
 				$base_path = str_replace('/Application/Admin/Controller', '', $base_path) . '/';
 				$path      = $base_path . $uploads . $info['savepath'] . $info['savename'];
-				$this->importExcel($tableName, $path ,$group_id);
+				//$this->importExcel($tableName, $path ,$group_id);
+				$this->importExcel($tableName, $path );
 			}
 		} else {
 			$this->error("请选择上传的文件");
 		}
-	    }
+	   // }
     }
 
 	public function inputCsv(){
@@ -118,8 +120,18 @@ class ExcelController extends AdminController
 		}
 
 
-}
-	public function importExcel($tableName, $filename ,$group_id)
+        }
+    public $count = 0;
+    public $runRow = 0;
+    public function ajaxPlan(){
+            $arr = array(
+                "count" => $this->count,
+                "run_row" => $this->runRow
+            );
+        echo json_encode($arr);
+    }
+
+	public function importExcel($tableName, $filename )
 	{
 
 		error_reporting(E_ALL);
@@ -132,16 +144,19 @@ class ExcelController extends AdminController
 		$PHPExcel      = $reader->load($filename); // 载入excel文件
 		$sheet         = $PHPExcel->getSheet(0); // 读取第一個工作表
 		$highestRow    = $sheet->getHighestRow(); // 取得总行数
+        $this->count = $highestRow;
 		$highestColMum = $sheet->getHighestColumn(); // 取得总列数
         /*创建回滚机制*/
         if($tableName == 'send_detail'){
             $db = M($tableName);
             $db->startTrans();
+
         }else{
             $this->error("请选择正确的库！");
         }
 
         for ($row = 1; $row <= $highestRow; $row++) {
+            $this->runRow = $row;
             for ($column = 'A'; $column <= $highestColMum; $column++) { //列数是以A列开始
                 if( $column == 'C' || $column == 'D' || $column == 'F' || $column == 'G' || $column == 'I' || $column == 'J'
                     || $column == 'K'  || $column == 'M' || $column == 'P' || $column == 'R' || $column == 'U'){
@@ -154,33 +169,36 @@ class ExcelController extends AdminController
                 unset($dataSet);
                 continue;
             }
-            $param = $this->getSubStore($dataSet[4] ,$group_id );
+           // $param = $this->getSubStore($dataSet[4] ,$group_id );
 
-            $type = $this->getRule($dataSet[2]);
-            $balancing = $this->getBalancing($dataSet[6],$dataSet[8],$type);
-            $arr[] = array(
-                "in_out_date" => $dataSet[1],
-                "customer_code" => $dataSet[2],
-                "customer_name" => $dataSet[3],
-                "sub_store" => $dataSet[4],
-                "express_number" => $dataSet[5],
-                "send_province" => $dataSet[6],
-                "send_city" => $dataSet[7],
-                "weight" => $dataSet[8],
-                "post_money" => $dataSet[9],
-                "balancing" => $balancing,
-                "in_out_org_name" => $param['in_out_org_name'],
+            //$type = $this->getRule($dataSet[2]);
+            //$balancing = $this->getBalancing($dataSet[6],$dataSet[8],$type);
+
+                $arr[] = array(
+                    "in_out_date" => $dataSet[1],
+                    "customer_code" => $dataSet[2],
+                    "customer_name" => $dataSet[3],
+                    "sub_store" => $dataSet[4],
+                    "express_number" => $dataSet[5],
+                    "send_province" => $dataSet[6],
+                    "send_city" => $dataSet[7] ? $dataSet[7] : "",
+                    "weight" => $dataSet[8],
+                    "post_money" => $dataSet[9]
+                );
+                //"balancing" => $balancing,
+               /* "in_out_org_name" => $param['in_out_org_name'],
                 "in_out_org_code" => $param['in_out_org_code'],
                 "in_out_org_id" => $param['in_out_org_id'],
                 "team_id" => $param['team_id'],
                 "team_name" => $param['team_name'],
                 "member_id" => $param['member_id'],
                 "team_member_name" => $param['team_member_name'],
-                "sub_store_id" => $param['sub_store_id']
-            );
+                "sub_store_id" => $param['sub_store_id']*/
+
             unset($dataSet);
             if( count($arr) >= 500 || $row == $highestRow ){
                 $this->saveData($db, $arr, $filename);
+                unset($arr);
             }
         }
 
@@ -190,6 +208,23 @@ class ExcelController extends AdminController
 		@unlink($filename);
 		$this->success("数据上传成功！");
 	}
+    private function saveData($db, $param, $filename)
+    {
+        //当发生异常的时候数据回滚，看以下实例
+        if(!empty($param)){
+            try{
+                $result = $db->addAll($param);
+                $db->commit();
+            }catch (Exception  $e){
+                $db->rollback();
+                @unlink($filename);
+                $this->error("发生未知错误,数据回滚,详情：".$e ,'',5);
+            }
+        }
+    }
+
+
+
     private function getRule($customer_code){
        // $customer_code= "43060100374000";
         $month = date("Y-m", strtotime("-1 month"));
@@ -206,20 +241,7 @@ class ExcelController extends AdminController
         }
 
     }
-    private function saveData($db, $param, $filename)
-    {
-        //当发生异常的时候数据回滚，看以下实例
-        if(!empty($param)){
-            try{
-                $result = $db->addAll($param);
-                $db->commit();
-            }catch (Exception  $e){
-                $db->rollback();
-                @unlink($filename);
-                $this->error("发生未知错误,数据回滚,详情：".$e ,'',5);
-            }
-        }
-    }
+
     private function getBalancing($province,$weight,$type){
         $weight = $weight / 1000;
         $param['name'] = $province;
