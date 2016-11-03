@@ -44,22 +44,7 @@ class ExcelController extends AdminController
     }
 	public function importExp()
 	{
-		//$tableName = $_POST['table_name'];
 		$tableName = "send_detail";
-
-      /*  $uid = session('user_auth')['uid'];
-        if(empty($_POST['sub_store'])){
-            $param['uid'] = $uid;
-            $param['position'] = 1;
-            $member = M("Member")->field("area")->where($param)->find();
-            if(count($member) > 0){
-                $group_id = $member['area'];
-            }else{
-                $this->error("请选择地域组");
-            }
-        }else{
-            $group_id = $_POST['sub_store'];
-		$tableName = C("db_table")[$tableName];*/
 		if (empty($tableName)) {
 			$this->error("请选择上传的库");
 		}
@@ -79,48 +64,12 @@ class ExcelController extends AdminController
 				$base_path = str_replace('\\', '/', realpath(dirname(__FILE__) . '/'));
 				$base_path = str_replace('/Application/Admin/Controller', '', $base_path) . '/';
 				$path      = $base_path . $uploads . $info['savepath'] . $info['savename'];
-				//$this->importExcel($tableName, $path ,$group_id);
 				$this->importExcel($tableName, $path );
 			}
 		} else {
 			$this->error("请选择上传的文件");
 		}
-	   // }
     }
-
-	public function inputCsv(){
-
-		header("Content-type: text/html;charset=utf-8"); //设置页面内容是html编码格式是utf-8
-		if (!empty($_FILES['file']['name'])) {
-			$uploads          = "Public/Uploads/";
-			$upload           = new \Think\Upload(); // 实例化上传类
-			$upload->maxSize  = 5242880; // 设置附件上传大小
-			$upload->exts     = array('csv'); // 设置附件上传类型
-			$upload->rootPath = $uploads; // 设置附件上传根目录
-			$upload->subName  = array('date', 'Ymd');
-			// 上传单个文件
-			$info = $upload->uploadOne($_FILES['file']);
-			if (!$info) { // 上传错误提示错误信息
-				$this->error($upload->getError());
-			} else { //上传Excel成功
-				$base_path = str_replace('\\', '/', realpath(dirname(__FILE__) . '/'));
-				$base_path = str_replace('/Application/Admin/Controller', '', $base_path) . '/';
-				$path      = $base_path . $uploads . $info['savepath'] . $info['savename'];
-				//$this->importExcel($tableName, $path ,$group_id);
-				echo $path;exit;
-				$file = fopen($path,"r");
-				while(! feof($file))
-				{
-					dump(fgetcsv($file));
-				}
-				fclose($file);
-			}
-		} else {
-			$this->error("请选择上传的文件");
-		}
-
-
-        }
     public $count = 0;
     public $runRow = 0;
     public function ajaxPlan(){
@@ -154,7 +103,8 @@ class ExcelController extends AdminController
         }else{
             $this->error("请选择正确的库！");
         }
-
+        $report = [];
+        $if_run = true;
         for ($row = 1; $row <= $highestRow; $row++) {
             $this->runRow = $row;
             for ($column = 'A'; $column <= $highestColMum; $column++) { //列数是以A列开始
@@ -166,14 +116,13 @@ class ExcelController extends AdminController
 
             }
             if((int)$dataSet[0] <= 0){
+                $report[] = $dataSet;
                 unset($dataSet);
-                continue;
-            }
-           // $param = $this->getSubStore($dataSet[4] ,$group_id );
-
-            //$type = $this->getRule($dataSet[2]);
-            //$balancing = $this->getBalancing($dataSet[6],$dataSet[8],$type);
-
+            }else{
+                if($if_run == true){
+                    $if_run = false;
+                    $this->insertReport($report);
+                }
                 $arr[] = array(
                     "in_out_date" => $dataSet[1],
                     "customer_code" => $dataSet[2],
@@ -185,20 +134,12 @@ class ExcelController extends AdminController
                     "weight" => $dataSet[8],
                     "post_money" => $dataSet[9]
                 );
-                //"balancing" => $balancing,
-               /* "in_out_org_name" => $param['in_out_org_name'],
-                "in_out_org_code" => $param['in_out_org_code'],
-                "in_out_org_id" => $param['in_out_org_id'],
-                "team_id" => $param['team_id'],
-                "team_name" => $param['team_name'],
-                "member_id" => $param['member_id'],
-                "team_member_name" => $param['team_member_name'],
-                "sub_store_id" => $param['sub_store_id']*/
 
-            unset($dataSet);
-            if( count($arr) >= 500 || $row == $highestRow ){
-                $this->saveData($db, $arr, $filename);
-                unset($arr);
+                unset($dataSet);
+                if( count($arr) >= 500 || $row == $highestRow ){
+                    $this->saveData($db, $arr, $filename);
+                    unset($arr);
+                }
             }
         }
 
@@ -208,6 +149,39 @@ class ExcelController extends AdminController
 		@unlink($filename);
 		$this->success("数据上传成功！");
 	}
+    private function insertReport($report){
+        $reportDb = M("Report");
+       // dump($report);
+        $params['report_title'] = $report[0][0];
+        $params['report_time']  = $report[1][0];
+        $params['report_org']   = $report[2][0];
+        $regex="'\d{4}-\d{1,2}-\d{1,2}'is";
+        preg_match_all($regex,$params['report_time'],$matches);
+        //dump($matches);
+        $params['start_time']   = $matches[0][0];
+        $params['end_time']     = $matches[0][1];
+
+        $arr = explode("揽收机构：", $params['report_org']);
+        $params['org_name']     = $arr[1];
+        $param['in_out_org'] = $params['org_name'];
+        $org_id = M("In_out_org")->field("id")->where($param)->find();
+        $params['org_id']     = $org_id['id'];
+        $params['user_id'] = session('user_auth')['uid'];
+        $params['create_time'] = date("Y-m-d H:i:s",time());
+
+        $data['end_time'] = array("egt" , $params['start_time']);
+        $data['org_id'] =  $params['org_id'] ;
+        $result = $reportDb->where($data)->find();
+        if( count($result) <= 0){
+            $reportDb->add($params);
+        }else{
+            $this->error("数据不能重复导入，请检查！");exit;
+        }
+
+
+    }
+
+
     private function saveData($db, $param, $filename)
     {
         //当发生异常的时候数据回滚，看以下实例
@@ -222,107 +196,6 @@ class ExcelController extends AdminController
             }
         }
     }
-
-
-
-    private function getRule($customer_code){
-       // $customer_code= "43060100374000";
-        $month = date("Y-m", strtotime("-1 month"));
-        $param['month'] = $month;
-        $param['customer_code'] = $customer_code;
-        $result = M("Send_count_customer")->field("num")->where($param)->find();
-        if(count($result) <= 0){
-            return 0;
-        }
-        if($result['num'] >= self::MONTHLY_ORDER){
-            return 1;
-        }else{
-            return 0;
-        }
-
-    }
-
-    private function getBalancing($province,$weight,$type){
-        $weight = $weight / 1000;
-        $param['name'] = $province;
-        $pro = M("Province")->field("id")->where($param)->find();
-        if(count($pro) <= 0){
-            $this->error("没有找到省份！");
-        }
-        $weight_rule = M("Province_attr")->field("first_weight,second_weight,three_weight,first_weight_s,three_weight_s")->where("province_id = ".$pro["id"])->find();
-        $charge_rule = M("Charge")->field("first_charge,second_charge,three_charge,first_charge_s,three_charge_s")->where("province_id = ".$pro["id"])->find();
-        if(count($weight_rule) <= 0 || count($charge_rule) <= 0){
-            $this->error("请补全相应的邮费规则！");
-        }
-        $balancing = 0;
-        if( $type == 0){
-            if($weight_rule['first_weight'] >= $weight ){
-                $balancing = $charge_rule['first_charge'];
-            }else if($weight_rule['second_weight'] >= $weight){
-                $balancing = $charge_rule['second_charge'];
-            }else{
-                $more_weight = $weight - $weight_rule['first_weight'];
-                $balancing = ceil($more_weight / $weight_rule['three_weight']) * $charge_rule['three_charge'] + $charge_rule['first_charge'];
-            }
-        }else if( $type == 1){
-            if($weight_rule['first_weight_s'] >= $weight ){
-                $balancing = $charge_rule['first_charge_s'];
-            }else{
-                $more_weight = $weight - $weight_rule['first_weight_s'];
-                $balancing = ceil($more_weight / $weight_rule['three_weight_s']) * $charge_rule['three_charge_s'] + $charge_rule['first_charge_s'];
-            }
-
-        }
-       return $balancing;
-    }
-    private function getSubStore($sub_name ,$group_id ){
-        $subDb = M("Sub_store");
-
-        /*新加的分仓，操作员都为区域管理员*/
-        $group = M("Auth_group")->field("id,title,org_id")->where("id =".$group_id)->find();
-        if($group['org_id'] > 0){
-            $org   = M("In_out_org")->field("id,in_out_org,org_code")->where("id=".$group['org_id'])->find();
-            if(count($org) <= 0){
-                $this->error("没有找到对应的机构，请检查配置信息！");
-            }
-        }else{
-            $this->error("请先配置好区域和机构对应关系！");
-        }
-
-        $dataSet['team_id'] =$group['id'];
-        $dataSet['team_name'] =$group['title'];
-
-        $dataSet['in_out_org_name'] =$org['in_out_org'];
-        $dataSet['in_out_org_code'] =$org['org_code'];
-        $dataSet['in_out_org_id'] =$org['id'];
-
-        $param['group_id'] = $group_id;
-        $param['sub_store_name'] = $sub_name;
-        $param['status'] = 0;
-        $result = $subDb->where($param)->find();
-        $sub_id = 0;
-
-        if(count($result) > 0){
-            $sub_id = $result['id'];
-
-        }else{
-            $arr = array(
-                "group_id" =>$group_id,
-                "sub_store_name" => $sub_name
-            );
-            $sub_id = $subDb->add($arr);
-        }
-        $member = M("member")->field("uid,nickname")->where("sub_store_id=".$sub_id)->find();
-        if(count($member) <= 0){
-            $member = M("member")->field("uid,nickname")->where("area=".$group_id)->find();
-        }
-        $dataSet['sub_store_id'] = $sub_id;
-        $dataSet['member_id'] =$member['uid'];
-        $dataSet['team_member_name'] =$member['nickname'];
-        return $dataSet;
-
-    }
-
     private function isAdmin(){
         return intval(session('user_auth')['uid']) === C('USER_ADMINISTRATOR');
     }
