@@ -19,13 +19,17 @@
 			<div class="tab-pane in">
 				<form action="{:U('AuthManager/writeGroup')}" enctype="application/x-www-form-urlencoded" method="POST" class="form-horizontal auth-form">
 					<volist name="node_list" id="node" >
+                        <if condition="$node.title neq '系统' ">
 						<dl class="checkmod">
 							<dt class="hd">
 								<label class="checkbox"><input class="auth_rules rules_all" type="checkbox" name="rules[]" value="<?php echo $main_rules[$node['url']] ?>">{$node.title}管理</label>
 							</dt>
 							<dd class="bd">
 								<present name="node['child']">
+
 								<volist name="node['child']" id="child" >
+
+
                                     <div class="rule_check">
                                         <div>
                                             <label class="checkbox" <notempty name="child['tip']">title='{$child.tip}'</notempty>>
@@ -44,10 +48,12 @@
                                            </span>
                                        </notempty>
 				                    </div>
+
 								</volist>
 								</present>
 							</dd>
 						</dl>
+                        </if>
 					</volist>
 
 			        <input type="hidden" name="id" value="{$this_group.id}" />
