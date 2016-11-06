@@ -7,13 +7,6 @@
     </div>
     <div class="cf">
         <div class="fl">
-
-            <label class="item-label">显示：<span class="check-tips"></span></label>
-
-            <select id="task_stuts" name="task_stuts" style="width:120px">
-                <option value="1"  <?php if( $stuts == 1)echo 'selected'; else echo ''; ?>>按天数统计</option>
-                <option value="2"  <?php if( $stuts == 2)echo 'selected'; else echo ''; ?>>按顾客统计</option>
-            </select>
             月份：
             <select id="month" name="month" style="width:120px">
                 <volist name="result" id="vo">
@@ -21,8 +14,15 @@
                     </tr>
                 </volist>
             </select>
-            <input type="text" name="customer_name" class="text input"  placeholder="请输入客户名" style="width: 150px;margin-left:30px "  />
+
+            <select id="task_stuts" name="task_stuts" style="width:120px" <?php if( !$is_admin )echo 'disabled'; else echo ''; ?>>
+                    <option value="1"   >按天数统计</option>
+                    <option value="2"  >按顾客统计</option>
+            </select>
+
+            <input type="text" name="customer_name" class="text input"  placeholder="请输入客户名/分仓名" style="width: 150px;margin-left:30px "  />
             <button class="btn" id="search" >查询</button>
+            <button class="btn" onClick="exportExcel()" >导出Excel</button>
           <!-- onchange="search_customer()" <select id="customers" name="customers" style="width:120px;display: none">
             </select>-->
 
@@ -34,16 +34,18 @@
     <style>
         .nav-select tr{ cursor: pointer}
     </style>
-    <div class="data-table table-striped" style="width: 60%;float: left;">
+    <div class="data-table table-striped">
         <table>
             <thead>
             <tr class="head_name">
                 <th width="50" >ID</th>
+                <th width="100">分仓名</th>
                 <th width="100">收寄日期</th>
                 <th width="60">包裹数量</th>
                 <th width="60">系统资费</th>
                 <th width="60">实际资费</th>
                 <th width="60">资费差额</th>
+
             </tr>
             </thead>
             <tbody id="count_list">
@@ -53,10 +55,7 @@
             </tbody>
         </table>
     </div>
-    <div style="width: 10%;float: left;margin-left:5%;margin-top:3.5rem">
-        <button class="btn" onClick="exportExcel()" style="width: 100%">导出Excel</button>
 
-    </div>
 
 
 </block>
@@ -91,7 +90,7 @@
             if(!type){
                 alert("请选择导出类型！");return;
             }
-            var customer_name =$("input[name=customer_name]").val();
+            var customer_name =$("input[name=customer_name]").val().trim();
             window.location.href = "index.php?s=/Excel/exportExcel/month/"+ month +"/type/"+type+"/customer_name/"+customer_name;
         }
         $("#search").on("click",function(){
@@ -99,38 +98,41 @@
            month = $("#month").find("option:selected").html();
 
             var type = $("#task_stuts").find("option:selected").val();
-            var customer_name =$("input[name=customer_name]").val();
+            var customer_name =$("input[name=customer_name]").val().trim();
+            if( type == 1 && customer_name == ""){
+                alert("按天数只能查询单个分仓，请输入分仓名！");return;
+            }
 
             $.post("index.php?s=/ReadWriteData/getSendCount.html",{month : month , type : type,customer_name:customer_name},function(data){
                 data = eval("("+ data +")");
                 if(data){
                     var str = "";
                     for(var i = 0 ; i < data.length ; i++){
-                        if(customer_name != ""){
+                     /*   if(customer_name != ""){
 
                             data[i].in_out_date = data[i].in_out_date.replace("00:00:00","");
                             str += '<tr><td>' + data[i].id + '</td><td>' + data[i].customer_name + '</td><td>' + data[i].in_out_date + '</td><td>' + data[i].num + '</td>' +
                                     '<td>' + data[i].post_money + '</td><td>' + data[i].balancing + '</td><td>' + data[i].gap_money + '</td></tr>';
-                        }else{
+                        }else{*/
                             if(type == 1){
                                 $(".head_name").find("th").eq(1).html("收寄日期");
                                 data[i].in_out_date = data[i].in_out_date.replace("00:00:00","");
-                                str += '<tr><td>' + data[i].id + '</td><td>' + data[i].in_out_date + '</td><td>' + data[i].num + '</td>' +
+                                str += '<tr><td>' + data[i].id + '</td><td>' + data[i].sub_store + '</td><td>' + data[i].in_out_date + '</td><td>' + data[i].num + '</td>' +
                                         '<td>' + data[i].post_money + '</td><td>' + data[i].balancing + '</td><td>' + data[i].gap_money + '</td></tr>';
                             }else{
                                 $(".head_name").find("th").eq(1).html("顾客");
                                 str += '<tr><td>' + data[i].id + '</td><td>' + data[i].customer_name + '</td><td>' + data[i].num + '</td>' +
                                         '<td>' + data[i].post_money + '</td><td>' + data[i].balancing + '</td><td>' + data[i].gap_money + '</td></tr>';
                             }
-                        }
+                      //  }
                     }
-                    if(customer_name != ""){
-                        if( $(".head_name").find("th").eq(1).html() != "客户名" ){
-                            $(".head_name").find("th").eq(1).html("收寄日期");
-                            $(".head_name").find("th").eq(0).after("<th>客户名</th>");
-                        }
-
+                    var table_head = '';
+                    if(type == 1){
+                        table_head ='<th width="50" >ID</th> <th width="100">分仓名</th><th width="100">收寄日期</th><th width="60">包裹数量</th><th width="60">系统资费</th><th width="60">实际资费</th><th width="60">资费差额</th>';
+                    }else{
+                        table_head ='<th width="50" >ID</th> <th width="100">顾客名</th><th width="60">包裹数量</th><th width="60">系统资费</th><th width="60">实际资费</th><th width="60">资费差额</th>';
                     }
+                    $(".head_name").html(table_head);
                     $("#count_list").html(str);
                 }else{
                     $("#count_list").html("<tr ><td colspan='6' style='text-align: center;color:red'>没有找到记录！</td></tr>");

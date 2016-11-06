@@ -103,6 +103,8 @@ class ExcelController extends AdminController
         }else{
             $this->error("请选择正确的库！");
         }
+
+
         $report = [];
         $if_run = true;
         for ($row = 1; $row <= $highestRow; $row++) {
@@ -121,7 +123,7 @@ class ExcelController extends AdminController
             }else{
                 if($if_run == true){
                     $if_run = false;
-                    $this->insertReport($report);
+                    $param = $this->insertReport($report);
                 }
                 $arr[] = array(
                     "in_out_date" => $dataSet[1],
@@ -132,7 +134,9 @@ class ExcelController extends AdminController
                     "send_province" => $dataSet[6],
                     "send_city" => $dataSet[7] ? $dataSet[7] : "",
                     "weight" => $dataSet[8],
-                    "post_money" => $dataSet[9]
+                    "post_money" => $dataSet[9],
+                    "area_id"    => $param['org_id'],
+                    "oper_name"    => session('user_auth')['uid']
                 );
 
                 unset($dataSet);
@@ -177,7 +181,7 @@ class ExcelController extends AdminController
         }else{
             $this->error("数据不能重复导入，请检查！");exit;
         }
-
+        return $params;
 
     }
 
@@ -201,22 +205,20 @@ class ExcelController extends AdminController
     }
     public function getSendList($month,$type,$customer_name){
         $param['month'] = $month;
-        if(!$this->isAdmin()){
-            $result = M("Member")->field("area")->where("uid = " .session('user_auth')['uid'])->find();
-            $param['team_id'] = $result['area'];
-        }
-        if($customer_name){
-            $tableName = "send_count_date_customer";
+
+        if( $type == 2 ){
+            $tableName = "send_count_customer";
             $param['customer_name'] = array('like',"%".$customer_name."%");
         }else{
-            if($type == 1 && $this->isAdmin()){
-                $tableName = "send_count_date";
-            }else if($type == 1 && !$this->isAdmin()){
-                $tableName = "send_count_date_group";
+            $tableName = "Send_count_date_customer";
+            if(!$this->isAdmin()){
+                $result = M("Member")->field("area")->where("uid = " .session('user_auth')['uid'])->find();
+                $param['area_id'] = $result['area'];
             }
-            if($type == 2 ){
-                $tableName = "send_count_customer";
+            if($customer_name){
+                $param['sub_store'] = array('like',"%".$customer_name."%");
             }
+
         }
         $result = M($tableName)->where($param)->select();
         $num_count = 0;
@@ -260,15 +262,6 @@ class ExcelController extends AdminController
 		require_once 'Application/Admin/Lib/Org/Util/PHPExcel.php';
 		$excel     = new \PHPExcel();
 		$xlsWriter = new \PHPExcel_Writer_Excel5($excel);
-        if($customer_name){
-            $cells = array(
-                'A' => array('title' => '收寄日期', 'width' => '30', 'value_key' => 'in_out_date','format' => 'date'),
-                'B' => array('title' => '收寄件数', 'width' => '15', 'value_key' => 'num'),
-                'C' => array('title' => '系统结算', 'width' => '20', 'value_key' => 'post_money'),
-                'D' => array('title' => '实际结算', 'width' => '20', 'value_key' => 'balancing'),
-                'E' => array('title' => '结算差额', 'width' => '20', 'value_key' => 'gap_money')
-            );
-        }else{
            if($type == 1){
                $cells = array(
                    'A' => array('title' => '收寄日期', 'width' => '30', 'value_key' => 'in_out_date','format' => 'date'),
@@ -285,7 +278,6 @@ class ExcelController extends AdminController
                    'D' => array('title' => '实际结算', 'width' => '20', 'value_key' => 'balancing'),
                    'E' => array('title' => '结算差额', 'width' => '20', 'value_key' => 'gap_money')
                );
-           }
         }
 		$row = 1;
 
@@ -333,6 +325,10 @@ class ExcelController extends AdminController
 	public function getDetailList($start_time,$end_time,$customer_name){
         if(!empty($customer_name)){
             $map['customer_name'] = array('like',"%".$customer_name."%");
+        }
+        if(!$this->isAdmin()){
+            $result = M("Member")->field("area")->where("uid = " .session('user_auth')['uid'])->find();
+            $map['area_id'] = $result['area'];
         }
 		$map['in_out_date'][] = array('egt',$start_time);
 		$map['in_out_date'][] = array('elt',$end_time);

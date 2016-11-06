@@ -17,7 +17,9 @@ class ReadWriteDataController extends AdminController
            $sub_store_list = M("Auth_group")->field("id,title")->where("status = 1")->select();
 
         }
-
+        $param['config_name'] = "MONTHLY_COUNT_DATA";
+        $rule = M("Config_system")->where($param)->find();
+        $this->assign("rule", $rule['config_value']);
 		$this->assign("result", $result);
 		$this->assign("sub_store_list", $sub_store_list);
 		$this->display();
@@ -28,27 +30,37 @@ class ReadWriteDataController extends AdminController
 	 */
 	public function configure()
 	{
+
 		$Model  = M();
 		$sql    = "select a.id ,a.zone_code,a.short_name,a.name,b.first_charge,b.second_charge,b.three_charge,b.first_charge_s,b.three_charge_s,
                     c.first_weight,c.second_weight,c.three_weight,c.first_weight_s,c.three_weight_s
                     from t_province as a left join t_charge as b on a.id= b.province_id left join t_province_attr as c  on a.id = c.province_id";
 		$result = $Model->query($sql);
+        $param['config_name'] = "MONTHLY_ORDER";
+        $rule = M("Config_system")->where($param)->find();
 		$this->assign("result", $result);
+        $this->assign("rule", $rule['config_value']);
 		$this->display();
 	}
      public function countData(){
-        $result = M("Send_month")->select();
+         $result = M("Send_month")->select();
          $this->assign("result",$result);
+         $this->assign('is_admin', $this->isAdmin());
          $this->display();
      }
 	public function ReadData()
 	{
-        $start_time = $_GET['start_time'] ?  $_GET['start_time'] : "2016-10-01";
-        $end_time = $_GET['end_time'] ? $_GET['end_time'] : "2016-10-31";
+
+        $start_time = $_GET['start_time'] ?  $_GET['start_time'] : date("Y-m-d",time()-30*24*3600);
+        $end_time = $_GET['end_time'] ? $_GET['end_time'] : date("Y-m-d",time());
         $map['in_out_date'][] = array('egt',$start_time);
         $map['in_out_date'][] = array('elt',$end_time);
         if(!empty($_GET['customer_name'])){
             $map['customer_name'] = array('like',"%".$_GET['customer_name']."%");
+        }
+        if(!$this->isAdmin()){
+            $result = M("Member")->field("area")->where("uid = " .session('user_auth')['uid'])->find();
+            $map['area_id'] = $result['area'];
         }
         $field = "id,express_number,in_out_date,in_out_org_name,customer_name,customer_code,sub_store,send_province,send_city,
         weight,post_money,balancing,(balancing-post_money) as gap_money,team_name,team_member_name";
@@ -76,25 +88,24 @@ class ReadWriteDataController extends AdminController
         $month = $_POST['month'];
         $type = $_POST['type'];
         $customer_name = $_POST['customer_name'];
-        $param['month'] = $month;
-        if(!$this->isAdmin()){
-            $result = M("Member")->field("area")->where("uid = " .session('user_auth')['uid'])->find();
-            $param['team_id'] = $result['area'];
-        }
-        if($customer_name){
-            $tableName = "send_count_date_customer";
-            $param['customer_name'] = array('like',"%".$_GET['customer_name']."%");
-        }else{
-            if($type == 1 && $this->isAdmin()){
-                $tableName = "send_count_date";
-            }else if($type == 1 && !$this->isAdmin()){
-                $tableName = "send_count_date_group";
-            }
-            if($type == 2 ){
-                $tableName = "send_count_customer";
-            }
-        }
 
+        $param['month'] = $month;
+
+        //todo 仅仅只有系统管理员才能去统计顾客的每天发单数，因为顾客可以存在多个分仓总
+        if( $type == 2 ){
+            $tableName = "send_count_customer";
+            $param['customer_name'] = array('like',"%".$customer_name."%");
+        }else{
+            $tableName = "Send_count_date_customer";
+            if(!$this->isAdmin()){
+                $result = M("Member")->field("area")->where("uid = " .session('user_auth')['uid'])->find();
+                $param['area_id'] = $result['area'];
+            }
+            if($customer_name){
+                $param['sub_store'] = array('like',"%".$customer_name."%");
+            }
+
+        }
         $result = M($tableName)->where($param)->select();
         echo json_encode($result);
     }
@@ -325,5 +336,53 @@ class ReadWriteDataController extends AdminController
         }
         M("Sub_store")->where('id ='.$store_id)->delete();
         echo 1;
+    }
+    public function setRule(){
+       if( !empty($_POST['rule'])) {
+           $systemDb = M("Config_system");
+           $param['config_name'] = "MONTHLY_ORDER";
+           $result = $systemDb->where($param)->find();
+           if( count($result) <= 0 ){
+               $arr = array(
+                   "config_name" => "MONTHLY_ORDER",
+                   "config_value" => $_POST['rule'],
+                   "create_time" => date("Y-m-d H:i:s",time())
+               );
+               $systemDb->add($arr);
+           }else{
+               $arr = array(
+                   "id"          => $result['id'],
+                   "config_name" => "MONTHLY_ORDER",
+                   "config_value" => $_POST['rule'],
+                   "create_time" => date("Y-m-d H:i:s",time())
+               );
+               $systemDb->save($arr);
+           }
+           echo 1;
+       }
+    }
+    public function setCountData(){
+       if( !empty($_POST['rule'])) {
+           $systemDb = M("Config_system");
+           $param['config_name'] = "MONTHLY_COUNT_DATA";
+           $result = $systemDb->where($param)->find();
+           if( count($result) <= 0 ){
+               $arr = array(
+                   "config_name" => "MONTHLY_COUNT_DATA",
+                   "config_value" => $_POST['rule'],
+                   "create_time" => date("Y-m-d H:i:s",time())
+               );
+               $systemDb->add($arr);
+           }else{
+               $arr = array(
+                   "id"          => $result['id'],
+                   "config_name" => "MONTHLY_COUNT_DATA",
+                   "config_value" => $_POST['rule'],
+                   "create_time" => date("Y-m-d H:i:s",time())
+               );
+               $systemDb->save($arr);
+           }
+           echo 1;
+       }
     }
 }

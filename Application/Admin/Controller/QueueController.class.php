@@ -1,7 +1,6 @@
 <?php
 namespace Admin\Controller;
 
-use DoctrineTest\InstantiatorTestAsset\SerializableArrayObjectAsset;
 use Think\Exception;
 
 class QueueController extends AdminController
@@ -9,7 +8,13 @@ class QueueController extends AdminController
 
 	public function runQueue()
 	{
-		$month = date("Y-m", time() - 7 * 24 * 3600);
+
+        $param['config_name'] = "MONTHLY_COUNT_DATA";
+        $rule = M("Config_system")->where($param)->find();
+        $today = (int)date("d",time());
+        //todo 当前时间为配置时间则运行处理队列
+        if($today == $rule['config_value']){
+		$month = date("Y-m", time() - 16 * 24 * 3600);
 		$list  = M("Send_month")->where("month= '" . $month . "'")->find();
 		if (count($list) <= 0) {
 			$arr = array(
@@ -17,12 +22,14 @@ class QueueController extends AdminController
 				"create_time" => date("Y-m-d H:i:s", time())
 			);
 			M("Send_month")->add($arr);
+            $this->countStoreSendNumByMonth($month); //统计每个分仓每月发件数
+            $this->traverseDetail($month);            //根据上面的发件数计算实际邮费
 			$this->CustomerSendCountByDateQueue($month); //按分仓客户对应表生成每月客户每天发单数
-			$this->sendCountByCustomerQueue($month); //生成每月每个客户发单数总计
+			$this->sendCountByDateQueue($month); //生成每月每个客户发单数总计
 		} else {
 			\Think\Log::record(time() . '===Queue->runQueue队列已经跑过了');
 		}
-
+        }
 	}
 
 	/*  1.统计每个客户上月的订单数  方法
@@ -59,7 +66,10 @@ class QueueController extends AdminController
 
 	}
 
-	public function traverseDetail($month)
+    /**  计算send_detail 表的价格
+     * @param $month
+     */
+    public function traverseDetail($month)
 	{
 		$db       = M();
 		$detailDb = M("Send_detail");
@@ -87,7 +97,10 @@ class QueueController extends AdminController
 		if (count($result) <= 0) {
 			\Think\Log::record(time() . '===Queue->getRule ,没有找到规则，理论上肯定有的，');
 		}
-		if ($result['num'] >= C("MONTHLY_ORDER")) {
+        $param['config_name'] = "MONTHLY_ORDER";
+        $rule = M("Config_system")->where($param)->find();
+        \Think\Log::record(time() . '===Queue->getRule '. json_encode($rule));
+		if ($result['num'] >= $rule['config_value']) {
 			return 1;
 		} else {
 			return 0;
@@ -164,7 +177,8 @@ class QueueController extends AdminController
 					"num"           => $val['num'],
 					"post_money"    => $val['post_money'],
 					"balancing"     => $val['balancing'],
-					"gap_money"     => $val['balancing'] - $val['post_money']
+					"gap_money"     => $val['balancing'] - $val['post_money'],
+                    "create_time"   => date("Y-m-d H:i:s", time())
 				);
 				M("Send_count_customer")->add($arr);
 			}
@@ -194,14 +208,13 @@ class QueueController extends AdminController
 		}
 	}
 
-	public function sendCountByDateQueue()
+	public function sendCountByDateQueue($month)
 	{
-		$month     = "2016-08";
 		$db        = M();
 		$storeDb   = M("Sub_store");
 		$storeList = $storeDb->field("id,sub_store_name,customer_name")->select();
 		foreach ($storeList as $val) {
-			$sql    = "select in_out_date,sub_store, count(*) as num,sum(post_money) as post_money,sum(balancing) as balancing
+			$sql    = "select in_out_date,sub_store,area, count(*) as num,sum(post_money) as post_money,sum(balancing) as balancing
                 from t_send_detail where in_out_date like '" . $month . "%' and sub_store = '" . $val['sub_store_name'] . "' GROUP BY in_out_date ";
 			$result = $db->query($sql);
 			if(count($result) > 0){
@@ -218,6 +231,7 @@ class QueueController extends AdminController
 				"month"       => $month,
 				"in_out_date" => $val['in_out_date'],
 				"sub_store"   => $val['sub_store'],
+				"area_id"   => $val['area'],
 				"num"         => $val['num'],
 				"post_money"  => $val['post_money'],
 				"balancing"   => $val['balancing'],

@@ -11,15 +11,17 @@
             <button class="btn ajax-post" url="{:U('changeStatus?method=resumeUser')}" target-form="ids">启 用</button>
             <button class="btn ajax-post" url="{:U('changeStatus?method=forbidUser')}" target-form="ids">禁 用</button>
             <button class="btn ajax-post confirm" url="{:U('changeStatus?method=deleteUser')}" target-form="ids">删 除</button>
-            <label class="item-label">只显示：<span class="check-tips"></span></label>
+            <if condition="$is_admin neq 0 ">
+                <label class="item-label">只显示：<span class="check-tips"></span></label>
+                <select id="task_stuts" name="task_stuts" style="width:120px" onchange="income()">
+                    <option value="0" <?php if($stuts==0) echo 'selected'; ?>>所有区域...</option>
+                    <volist name="department" id="vo">
+                        <option value="{$vo.id}"  <?php if($stuts==$vo['id'])echo 'selected'; else echo ''; ?>>{$vo.title}</option>
 
-            <select id="task_stuts" name="task_stuts" style="width:120px" onchange="income()">
-                <option value="0" <?php if($stuts==0) echo 'selected'; ?>>所有区域...</option>
-                <volist name="department" id="vo">
-                    <option value="{$vo.id}"  <?php if($stuts==$vo['id'])echo 'selected'; else echo ''; ?>>{$vo.title}</option>
+                    </volist>
+                </select>
+            </if>
 
-                </volist>
-            </select>
         </div>
 
         <!-- 高级搜索 -->
@@ -30,11 +32,13 @@
 			</div>
 		</div>
     </div>
+    <if condition="$is_admin neq 0 ">
     <div style="margin-top:0.5rem;width: 100%;height: 3.5rem;background-color: #fffc59;border: 1px dotted #1115ff">
         <b>注意事项：</b>1.表格最上面浅绿色是各区域的管理员。<br/>
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         2.变更区域管理员点击操作栏的授权去更改。
     </div>
+    </if>
     <!-- 数据列表 -->
     <div class="data-table table-striped">
 	<table class="">
@@ -76,7 +80,9 @@
 				<else/>
 				<a href="{:U('User/changeStatus?method=resumeUser&id='.$vo['uid'])}" class="ajax-get">启用</a>
 				</eq>
+                <if condition="$is_admin neq 0 ">
 				<a href="{:U('AuthManager/group?uid='.$vo['uid'])}" class="authorize">授权</a>
+                </if>
                 <a href="{:U('User/changeStatus?method=deleteUser&id='.$vo['uid'])}" class="confirm ajax-get">删除</a>
                 </td>
 		</tr>
@@ -87,6 +93,7 @@
 	</tbody>
 
     </table>
+        <if condition="$is_admin neq 0 ">
         <div>
            <label style="font-weight: bold;color: rgba(13, 9, 10, 0.42);font-size: 14px">变更到：</label>
             <select  id="group_ids" style="width:120px" >
@@ -98,6 +105,7 @@
             </select>
             <button class="btn" style="background-color: red !important;" onclick="moveMember()">确 定</button>
         </div>
+        </if>
 	</div>
     <div class="page">
         {$_page}

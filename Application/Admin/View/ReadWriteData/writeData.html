@@ -8,7 +8,11 @@
 	<!-- /标题栏 -->
 
 	<!-- 应用列表 -->
-
+    <div style="margin-top:0.5rem;width: 100%;">
+        <span style="color:#ff0507">请设置计算日：</span><input type="text" class="text input" id="set_date" value="{$rule}" placeholder="请输入数字1-15"
+                       style="width: 120px;border: 1px solid #000000" onchange="setRule()"/>
+        <span class="check-tips" >（默认为每月5号）</span>
+    </div>
 	<form action="{:U('/Excel/importExp')}" method="post" enctype="multipart/form-data"  class="form-horizontal">
 			<!--<div class="form-item">
 				<label class="item-label">请选择库<span class="check-tips">（注意：选错库会导致数据导入失败）</span></label>
@@ -58,6 +62,22 @@
 </block>
 <block name="script">
     <script type="text/javascript">
+        function setRule(){
+            var rule = $("#set_date").val();
+            if( rule == "" || rule <= 0 || rule > 15 ){
+
+                alert("设置计算归则格式不正确！");return;
+            }
+            $.post("index.php?s=/ReadWriteData/setCountData",{rule:rule},function(data){
+                if(data == 1){
+                    alert("设置规则成功！");
+                }else{
+                    alert("发生未知错误请稍后再试！");
+                }
+            });
+        }
+
+
         setTimeout("run()",3000);
         function run(){
             $.post("index.php?s=/Excel/ajaxPlan",{},function(data){

@@ -28,6 +28,10 @@ class UserController extends AdminController {
         }else{
             $map['nickname']    =   array('like', '%'.(string)$nickname.'%');
         }
+        if(!$this->isAdmin()){
+           $result = M("Member")->field("area")->where("uid = ". session('user_auth')['uid'])->find();
+            $map['area'] = $result['area'];
+        }
         if(!empty($_GET['stuts'])){
             $map['area']=array('EQ',$_GET['stuts']);
         }
@@ -35,7 +39,7 @@ class UserController extends AdminController {
 
         $result = M("Auth_group")->where("status = 1")->select();
         foreach($list as $key=>$val){
-            if($list[$key]['nickname']=='zw'){
+            if($list[$key]['uid'] == session('user_auth')['uid']){
                 unset($list[$key]);
             }
             foreach($result as $i=>$j){
@@ -49,8 +53,12 @@ class UserController extends AdminController {
         $this->assign('stuts',$_GET['stuts']);
         $this->assign('department',$result);
         $this->assign('_list', $list);
+        $this->assign('is_admin', $this->isAdmin());
         $this->meta_title = '用户信息';
         $this->display();
+    }
+    private function isAdmin(){
+       return intval(session('user_auth')['uid']) === C('USER_ADMINISTRATOR');
     }
 	public function imgupload(){
 		$this->display();
