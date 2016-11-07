@@ -88,7 +88,7 @@ class ExcelController extends AdminController
 		\Think\Log::record(time() . '===importExcel->1111');
         ini_set("memory_limit","500M");
 		\Think\Log::record(time() . '===importExcel->2222');
-        set_time_limit(2000);
+        set_time_limit(0);
 		\Think\Log::record(time() . '===importExcel->333333');
         date_default_timezone_set('Asia/ShangHai');
 		require_once 'Application/Admin/Lib/Org/Util/PHPExcel/IOFactory.php';
