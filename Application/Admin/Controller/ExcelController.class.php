@@ -83,7 +83,7 @@ class ExcelController extends AdminController
 	public function importExcel($tableName, $filename )
 	{
 		error_reporting(E_ALL);
-        ini_set("memory_limit","1024M");
+        ini_set("memory_limit","2048M");
         set_time_limit(1000);
         date_default_timezone_set('Asia/ShangHai');
 		require_once 'Application/Admin/Lib/Org/Util/PHPExcel/IOFactory.php';
