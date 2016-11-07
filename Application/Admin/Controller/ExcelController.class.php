@@ -98,7 +98,9 @@ class ExcelController extends AdminController
 		\Think\Log::record(time() . '===importExcel->55555');
 		$sheet         = $PHPExcel->getSheet(0); // 读取第一個工作表
 		$highestRow    = $sheet->getHighestRow(); // 取得总行数
+		\Think\Log::record(time() . '===importExcel->666'.$highestRow);
 		$highestColMum = $sheet->getHighestColumn(); // 取得总列数
+		\Think\Log::record(time() . '===importExcel->777'.$highestColMum);
         /*创建回滚机制*/
         if($tableName == 'send_detail'){
             $db = M($tableName);
