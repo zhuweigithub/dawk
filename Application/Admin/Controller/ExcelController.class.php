@@ -71,7 +71,7 @@ class ExcelController extends AdminController
 			$this->error("请选择上传的文件");
 		}
     }
-    public $count = 0;
+/*    public $count = 0;
     public $runRow = 0;
     public function ajaxPlan(){
             $arr = array(
@@ -79,7 +79,7 @@ class ExcelController extends AdminController
                 "run_row" => $this->runRow
             );
         echo json_encode($arr);
-    }
+    }*/
 
 	public function importExcel($tableName, $filename )
 	{
@@ -98,7 +98,6 @@ class ExcelController extends AdminController
 		\Think\Log::record(time() . '===importExcel->55555');
 		$sheet         = $PHPExcel->getSheet(0); // 读取第一個工作表
 		$highestRow    = $sheet->getHighestRow(); // 取得总行数
-        $this->count = $highestRow;
 		$highestColMum = $sheet->getHighestColumn(); // 取得总列数
         /*创建回滚机制*/
         if($tableName == 'send_detail'){
@@ -113,7 +112,6 @@ class ExcelController extends AdminController
         $report = [];
         $if_run = true;
         for ($row = 1; $row <= $highestRow; $row++) {
-            $this->runRow = $row;
             for ($column = 'A'; $column <= $highestColMum; $column++) { //列数是以A列开始
                 if( $column == 'C' || $column == 'D' || $column == 'F' || $column == 'G' || $column == 'I' || $column == 'J'
                     || $column == 'K'  || $column == 'M' || $column == 'P' || $column == 'R' || $column == 'U'){
@@ -237,7 +235,7 @@ class ExcelController extends AdminController
             $gap_money_count += $val['gap_money'];
         }
         $result[count($result)] = array(
-        "month" => "2016-10",
+        "month" => $month,
         "num" => $num_count,
         "post_money" => $post_money_count,
         "balancing" => $balancing_count,
