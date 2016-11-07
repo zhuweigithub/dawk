@@ -11,17 +11,20 @@
 
         </div>
     </div>
-    <div style="margin-top:0.5rem;width: 100%;height: 2rem;background-color: #fffc59;border: 1px dotted #1115ff">
+    <div style="margin-top:0.5rem;width: 100%;height: 2rem;background-color: #fffc59;border: 1px dotted #1115ff;line-height: 2rem">
         <b>备注：</b>单件最大不超过20公斤，长宽高单面不超过100CM
     </div>
     <div style="margin-top:0.5rem;width: 100%;">
         每月发单数不少于<input type="text" class="text input" id="set_rule" value="{$rule}" placeholder="请输入数量" style="width: 120px;border: 1px solid #000000" onchange="setRule()"/>使用标准二
     </div>
-
+<style>
+    tr th{border: 1px solid #fff;text-align: center !important;font-weight: bold !important;}
+</style>
     <div class="data-table table-striped">
         <table>
             <thead>
-            <tr>
+
+            <tr style="border:1px solid #fff">
                 <th width="80" rowspan="2">CODE</th>
                 <th width="80" rowspan="2">省份（简称）</th>
                 <th width="150" rowspan="2">省份全名</th>
@@ -29,7 +32,7 @@
                 <th width="80" colspan="2" style="text-align: center">标准二</th>
                 <th width="70" rowspan="2">操作</th>
             </tr>
-            <tr>
+            <tr style="border:1px solid red">
                 <th width="80">起步(元/kg)</th>
                 <th width="80">首重(元/kg)</th>
                 <th width="80">续重(元/kg)</th>

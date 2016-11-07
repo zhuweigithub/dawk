@@ -106,7 +106,7 @@ class ExcelController extends AdminController
         $if_run = true;
         for ($row = 1; $row <= $highestRow; $row++) {
             for ($column = 'A'; $column <= $highestColMum; $column++) { //列数是以A列开始
-                if( $column == 'C' || $column == 'D' || $column == 'F' || $column == 'G' || $column == 'I' || $column == 'J'
+               if( $column == 'C' || $column == 'D' || $column == 'F' || $column == 'G' || $column == 'I' || $column == 'J'
                     || $column == 'K'  || $column == 'M' || $column == 'P' || $column == 'R' || $column == 'U'){
                     continue;
                 }
@@ -351,7 +351,7 @@ class ExcelController extends AdminController
 		$xlsWriter = new \PHPExcel_Writer_Excel5($excel);
 
 			$cells = array(
-				'A' => array('title' => '序号', 'width' => '30', 'value_key' => 'id'),
+				'A' => array('title' => '序号', 'width' => '30', 'value_key' => 'id','format' => 'zw'),
 				'B' => array('title' => '收寄日期', 'width' => '15', 'value_key' => 'in_out_date' ,'format' => 'date'),
 				'C' => array('title' => '大宗客户', 'width' => '20', 'value_key' => 'customer_name','format' => 'string'),
 				'D' => array('title' => '分仓', 'width' => '20', 'value_key' => 'sub_store','format' => 'string'),
@@ -383,7 +383,11 @@ class ExcelController extends AdminController
 				if (is_string($value['value_key'])) {
 					if ($value['format'] == 'string') {
 						$excel->getActiveSheet()->setCellValueExplicit($key . $row, $items[$value['value_key']], \PHPExcel_Cell_DataType::TYPE_STRING);
-					} elseif ($value['format'] == 'date') {
+					}elseif ($value['format'] == 'zw') {
+                        $tmpValue = $row-1;
+                        $excel->getActiveSheet()->setCellValue($key . $row, $tmpValue);
+                    }
+                    elseif ($value['format'] == 'date') {
 						$datetime = !empty($items[$value['value_key']]) ? str_replace("00:00:00", "", $items[$value['value_key']])  : '';
 						$excel->getActiveSheet()->setCellValue($key . $row, $datetime);
 					} else {

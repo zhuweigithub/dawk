@@ -203,7 +203,8 @@ select {
 /* 表头配色 */
 .data-table thead th {
 	color:#fff;
-    background-color: #353535;
+    background-color: #656565;
+    font-weight: bold;
 }
 /* 隔行变色 行默认颜色 */
 .table-striped tbody tr {
