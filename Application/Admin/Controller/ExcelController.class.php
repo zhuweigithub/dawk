@@ -44,6 +44,7 @@ class ExcelController extends AdminController
     }
 	public function importExp()
 	{
+		\Think\Log::record(time() . '===importExcel->send_detail');
 		$tableName = "send_detail";
 		if (empty($tableName)) {
 			$this->error("请选择上传的库");
@@ -82,7 +83,7 @@ class ExcelController extends AdminController
 
 	public function importExcel($tableName, $filename )
 	{
-
+		\Think\Log::record(time() . '===importExcel->zwzwZw');
 		error_reporting(E_ALL);
 		\Think\Log::record(time() . '===importExcel->1111');
         ini_set("memory_limit","200M");
