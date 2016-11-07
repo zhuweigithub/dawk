@@ -44,7 +44,6 @@ class ExcelController extends AdminController
     }
 	public function importExp()
 	{
-		\Think\Log::record(time() . '===importExcel->send_detail');
 		$tableName = "send_detail";
 		if (empty($tableName)) {
 			$this->error("请选择上传的库");
@@ -83,24 +82,16 @@ class ExcelController extends AdminController
 
 	public function importExcel($tableName, $filename )
 	{
-		\Think\Log::record(time() . '===importExcel->zwzwZw');
 		error_reporting(E_ALL);
-		\Think\Log::record(time() . '===importExcel->1111');
-        ini_set("memory_limit","100M");
-		\Think\Log::record(time() . '===importExcel->2222');
+        ini_set("memory_limit","512M");
         set_time_limit(1000);
-		\Think\Log::record(time() . '===importExcel->333333');
         date_default_timezone_set('Asia/ShangHai');
 		require_once 'Application/Admin/Lib/Org/Util/PHPExcel/IOFactory.php';
 		$reader        = \PHPExcel_IOFactory::createReaderForFile($filename); //设置以Excel5格式(Excel97-2003工作簿)
-		\Think\Log::record(time() . '===importExcel->4444');
 		$PHPExcel      = $reader->load($filename); // 载入excel文件
-		\Think\Log::record(time() . '===importExcel->55555');
 		$sheet         = $PHPExcel->getSheet(0); // 读取第一個工作表
 		$highestRow    = $sheet->getHighestRow(); // 取得总行数
-		\Think\Log::record(time() . '===importExcel->666'.$highestRow);
 		$highestColMum = $sheet->getHighestColumn(); // 取得总列数
-		\Think\Log::record(time() . '===importExcel->777'.$highestColMum);
         /*创建回滚机制*/
         if($tableName == 'send_detail'){
             $db = M($tableName);
