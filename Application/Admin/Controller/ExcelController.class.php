@@ -86,7 +86,7 @@ class ExcelController extends AdminController
 		\Think\Log::record(time() . '===importExcel->zwzwZw');
 		error_reporting(E_ALL);
 		\Think\Log::record(time() . '===importExcel->1111');
-        ini_set("memory_limit","500M");
+        ini_set("memory_limit","100M");
 		\Think\Log::record(time() . '===importExcel->2222');
         set_time_limit(1000);
 		\Think\Log::record(time() . '===importExcel->333333');
