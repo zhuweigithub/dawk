@@ -43,11 +43,12 @@
                 <td>{$data.zone_code}</td>
                 <td>{$data.short_name}</td>
                 <td>{$data.name}</td>
-                <td>{$data.first_charge}/{$data.first_weight}</td>
-                <td>{$data.second_charge}/{$data.second_weight}</td>
-                <td>{$data.three_charge}/{$data.three_weight}</td>
-                <td>{$data.first_charge_s}/{$data.first_weight_s}</td>
-                <td>{$data.three_charge_s}/{$data.three_weight_s}</td>
+
+                <td><?php echo str_replace(".00","",$data['first_charge']); ?>/<?php echo str_replace(".00","",$data['first_weight']); ?></td>
+                <td><?php echo str_replace(".00","",$data['second_charge']); ?>/<?php echo str_replace(".00","",$data['second_weight']); ?></td>
+                <td><?php echo str_replace(".00","",$data['three_charge']); ?>/<?php echo str_replace(".00","",$data['three_weight']); ?></td>
+                <td><?php echo str_replace(".00","",$data['first_charge_s']); ?>/<?php echo str_replace(".00","",$data['first_weight_s']); ?></td>
+                <td><?php echo str_replace(".00","",$data['three_charge_s']); ?>/<?php echo str_replace(".00","",$data['three_weight_s']); ?></td>
                 <td class="action">
                     <a class="db-import update-{$data.id}" onclick="updateData('{$data.id}')">修改</a>&nbsp;
                     <a class="db-import affirm-{$data.id}" style="display: none" onclick="affirm('{$data.id}')">确认修改</a>&nbsp;

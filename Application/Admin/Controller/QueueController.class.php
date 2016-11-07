@@ -5,6 +5,9 @@ use Think\Exception;
 
 class QueueController extends AdminController
 {
+	public function test(){
+		echo	date("Y-m",strtotime("-4months",strtotime(date("Y-m", time()))));
+	}
 
 	public function runQueue()
 	{
@@ -12,24 +15,28 @@ class QueueController extends AdminController
         $param['config_name'] = "MONTHLY_COUNT_DATA";
         $rule = M("Config_system")->where($param)->find();
         $today = (int)date("d",time());
+
         //todo 当前时间为配置时间则运行处理队列
         if($today == $rule['config_value']){
-		$month = date("Y-m", time() - 16 * 24 * 3600);
+		for($i = 1;$i < 5 ;$i++ ){
+		$month = date("Y-m",strtotime("-" . $i . "months",strtotime(date("Y-m", time()))));
 		$list  = M("Send_month")->where("month= '" . $month . "'")->find();
-		if (count($list) <= 0) {
-			$arr = array(
-				"month"       => $month,
-				"create_time" => date("Y-m-d H:i:s", time())
-			);
-			M("Send_month")->add($arr);
-            $this->countStoreSendNumByMonth($month); //统计每个分仓每月发件数
-            $this->traverseDetail($month);            //根据上面的发件数计算实际邮费
-			$this->CustomerSendCountByDateQueue($month); //按分仓客户对应表生成每月客户每天发单数
-			$this->sendCountByDateQueue($month); //生成每月每个客户发单数总计
-		} else {
-			\Think\Log::record(time() . '===Queue->runQueue队列已经跑过了');
+
+			if (count($list) <= 0) {
+				$arr = array(
+					"month"       => $month,
+					"create_time" => date("Y-m-d H:i:s", time())
+				);
+				M("Send_month")->add($arr);
+				$this->countStoreSendNumByMonth($month); //统计每个分仓每月发件数
+				$this->traverseDetail($month);            //根据上面的发件数计算实际邮费
+				$this->CustomerSendCountByDateQueue($month); //按分仓客户对应表生成每月客户每天发单数
+				$this->sendCountByDateQueue($month); //生成每月每个客户发单数总计
+			} else {
+				\Think\Log::record(time() . '===Queue->runQueue'.$month.'队列已经跑过了');
+			}
 		}
-        }
+       }
 	}
 
 	/*  1.统计每个客户上月的订单数  方法
