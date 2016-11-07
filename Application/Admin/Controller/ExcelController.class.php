@@ -84,13 +84,17 @@ class ExcelController extends AdminController
 	{
 
 		error_reporting(E_ALL);
+		\Think\Log::record(time() . '===importExcel->1111');
         ini_set("memory_limit","200M");
+		\Think\Log::record(time() . '===importExcel->2222');
         set_time_limit(2000);
+		\Think\Log::record(time() . '===importExcel->333333');
         date_default_timezone_set('Asia/ShangHai');
 		require_once 'Application/Admin/Lib/Org/Util/PHPExcel/IOFactory.php';
 		$reader        = \PHPExcel_IOFactory::createReaderForFile($filename); //设置以Excel5格式(Excel97-2003工作簿)
-
+		\Think\Log::record(time() . '===importExcel->4444');
 		$PHPExcel      = $reader->load($filename); // 载入excel文件
+		\Think\Log::record(time() . '===importExcel->55555');
 		$sheet         = $PHPExcel->getSheet(0); // 读取第一個工作表
 		$highestRow    = $sheet->getHighestRow(); // 取得总行数
         $this->count = $highestRow;
