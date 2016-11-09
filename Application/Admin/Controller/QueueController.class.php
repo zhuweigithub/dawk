@@ -11,13 +11,13 @@ class QueueController extends AdminController
 
 	public function runQueue()
 	{
-
+        set_time_limit(0);
         $param['config_name'] = "MONTHLY_COUNT_DATA";
         $rule = M("Config_system")->where($param)->find();
         $today = (int)date("d",time());
 
         //todo 当前时间为配置时间则运行处理队列
-        if($today == $rule['config_value']){
+        if($today != $rule['config_value']){
 		for($i = 1;$i < 5 ;$i++ ){
 		$month = date("Y-m",strtotime("-" . $i . "months",strtotime(date("Y-m", time()))));
 		$list  = M("Send_month")->where("month= '" . $month . "'")->find();
@@ -48,6 +48,7 @@ class QueueController extends AdminController
 
 	public function countStoreSendNumByMonth($month)
 	{
+        set_time_limit(0);
 		$dbCount = M("Count_sub_store");
 		$db      = M();
 		$sql     = "select sub_store,in_out_date, count(*) as num
@@ -78,10 +79,11 @@ class QueueController extends AdminController
      */
     public function traverseDetail($month)
 	{
+        set_time_limit(0);
 		$db       = M();
 		$detailDb = M("Send_detail");
 		$sql      = "select id , sub_store,send_province,send_city,weight,post_money
-                from t_send_detail where in_out_date like '" . $month . "%' GROUP BY sub_store ";
+                from t_send_detail where in_out_date like '" . $month . "%'";
 		$result   = $db->query($sql);
 
 		foreach ($result as $key => $val) {
@@ -98,6 +100,7 @@ class QueueController extends AdminController
 
 	private function getRule($month, $sub_store)
 	{
+        set_time_limit(0);
 		$param['month']     = $month;
 		$param['sub_store'] = $sub_store;
 		$result             = M("Count_sub_store")->field("num")->where($param)->find();
@@ -117,6 +120,7 @@ class QueueController extends AdminController
 
 	private function getBalancing($province, $weight, $type)
 	{
+        set_time_limit(0);
 		$weight        = $weight / 1000;
 		$param['name'] = $province;
 		$pro           = M("Province")->field("id")->where($param)->find();
@@ -154,12 +158,14 @@ class QueueController extends AdminController
 
 	public function CustomerSendCountByDateQueue($month)
 	{
+        set_time_limit(0);
 		$detailDb             = M("Send_detail");
 		$param['in_out_date'] = array("like", $month . "%");
 		$result               = $detailDb->where($param)
 			->field("sub_store,count(1) as num ,sum(weight) as weight,sum(post_money) as post_money ,sum(balancing) as balancing ")
 			->group("sub_store")
 			->select();
+
 		$storeDb              = M("Sub_store");
 		$storeList            = $storeDb->field("id,sub_store_name,customer_name")->select();
 		$k                    = 0;
@@ -196,6 +202,7 @@ class QueueController extends AdminController
 
 	private function dg($data_base)
 	{
+        set_time_limit(0);
 		$ifg = true;
 		for ($x = 0; $x < count($data_base); $x++) {
 			if ($data_base[$x]['customer_name'] == $data_base[$x + 1]['customer_name']) {
@@ -217,11 +224,12 @@ class QueueController extends AdminController
 
 	public function sendCountByDateQueue($month)
 	{
+        set_time_limit(0);
 		$db        = M();
 		$storeDb   = M("Sub_store");
 		$storeList = $storeDb->field("id,sub_store_name,customer_name")->select();
 		foreach ($storeList as $val) {
-			$sql    = "select in_out_date,sub_store,area, count(*) as num,sum(post_money) as post_money,sum(balancing) as balancing
+			$sql    = "select in_out_date,sub_store,area_id, count(*) as num,sum(post_money) as post_money,sum(balancing) as balancing
                 from t_send_detail where in_out_date like '" . $month . "%' and sub_store = '" . $val['sub_store_name'] . "' GROUP BY in_out_date ";
 			$result = $db->query($sql);
 			if(count($result) > 0){
@@ -232,13 +240,13 @@ class QueueController extends AdminController
 
 	private function insertDataCustomer($month, $result)
 	{
-
+        set_time_limit(0);
 		foreach ($result as $val) {
 			$arr = array(
 				"month"       => $month,
 				"in_out_date" => $val['in_out_date'],
 				"sub_store"   => $val['sub_store'],
-				"area_id"   => $val['area'],
+				"area_id"   => $val['area_id'],
 				"num"         => $val['num'],
 				"post_money"  => $val['post_money'],
 				"balancing"   => $val['balancing'],

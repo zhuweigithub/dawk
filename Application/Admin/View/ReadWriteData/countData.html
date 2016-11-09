@@ -15,12 +15,12 @@
                 </volist>
             </select>
 
-            <select id="task_stuts" name="task_stuts" style="width:120px" <?php if( !$is_admin )echo 'disabled'; else echo ''; ?>>
+            <select id="task_stuts" name="task_stuts" onChange="change_Pla(this)" style="width:120px" <?php if( !$is_admin )echo 'disabled'; else echo ''; ?> >
                     <option value="1"   >按天数统计</option>
                     <option value="2"  >按顾客统计</option>
             </select>
 
-            <input type="text" name="customer_name" class="text input"  placeholder="请输入客户名/分仓名" style="width: 150px;margin-left:30px "  />
+            <input type="text" name="customer_name" class="text input"  placeholder="请输入客户名" style="width: 150px;margin-left:30px "  />
             <button class="btn" id="search" >查询</button>
             <button class="btn" onClick="exportExcel()" >导出Excel</button>
           <!-- onchange="search_customer()" <select id="customers" name="customers" style="width:120px;display: none">
@@ -62,7 +62,14 @@
 
 <block name="script">
 <script type="text/javascript">
-
+        function change_Pla(obj){
+          var i = $(obj).find("option:selected").val();
+            if(i == 1){
+              $("input[name=customer_name]").attr("placeholder","请输入分仓名");
+            }else{
+                $("input[name=customer_name]").attr("placeholder","请输入客户名");
+            }
+        }
     /*function search_customer(){
 
         var customer_name =$("input[name=customer_name]").val();

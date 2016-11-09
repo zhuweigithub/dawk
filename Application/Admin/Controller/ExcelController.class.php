@@ -52,7 +52,7 @@ class ExcelController extends AdminController
 		if (!empty($_FILES['excel']['name'])) {
 			$uploads          = "Public/Uploads/";
 			$upload           = new \Think\Upload(); // 实例化上传类
-			$upload->maxSize  = 5242880; // 设置附件上传大小
+			$upload->maxSize  = 52428800; // 设置附件上传大小
 			$upload->exts     = array('xlsx', 'xls'); // 设置附件上传类型
 			$upload->rootPath = $uploads; // 设置附件上传根目录
 			$upload->subName  = array('date', 'Ymd');
@@ -136,7 +136,7 @@ class ExcelController extends AdminController
                 );
 
                 unset($dataSet);
-                if( count($arr) >= 500 || $row == $highestRow ){
+                if( count($arr) >= 500 || $row == $highestRow - 2 ){
                     $this->saveData($db, $arr, $filename);
                     unset($arr);
                 }
