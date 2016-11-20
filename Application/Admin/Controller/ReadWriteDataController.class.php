@@ -32,7 +32,7 @@ class ReadWriteDataController extends AdminController
 	{
 
 		$Model  = M();
-		$sql    = "select a.id ,a.zone_code,a.short_name,a.name,b.first_charge,b.second_charge,b.three_charge,b.first_charge_s,b.three_charge_s,
+		$sql    = "select a.id ,a.zone_name,a.short_name,a.name,b.first_charge,b.second_charge,b.three_charge,b.first_charge_s,b.three_charge_s,
                     c.first_weight,c.second_weight,c.three_weight,c.first_weight_s,c.three_weight_s
                     from t_province as a left join t_charge as b on a.id= b.province_id left join t_province_attr as c  on a.id = c.province_id";
 		$result = $Model->query($sql);
@@ -385,4 +385,5 @@ class ReadWriteDataController extends AdminController
            echo 1;
        }
     }
+
 }

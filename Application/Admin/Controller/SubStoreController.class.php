@@ -7,9 +7,9 @@ class SubStoreController extends AdminController
         if(!empty($_GET['search_key'])){
             $map['sub_store_name|customer_name']=   array(array('like','%'.$search_key.'%'),array('like','%'.$search_key.'%'),'_multi'=>true);
         }
-        $subDb = M("Sub_store");
-        $result = $subDb->where($map)->order("id desc")->select();
-
+      /*  $subDb = M("Sub_store");
+        $result = $subDb->where($map)->order("id desc")->select();*/
+        $result   = $this->lists('Sub_store', $map ,"id desc");
         $this->assign("result",$result);
         $this->assign("search_key",$search_key);
         $this->display();

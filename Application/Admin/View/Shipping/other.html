@@ -1,0 +1,156 @@
+<extend name="Public/base"/>
+
+<block name="body">
+    <div class="main-title">
+        <h2>大宗客户收费标准</h2>
+    </div>
+    <style>
+        tr th{border: 1px solid #fff;text-align: center !important;font-weight: bold !important;}
+    </style>
+    <div class="data-table table-striped">
+        <table>
+            <thead>
+
+            <tr style="border:1px solid #fff">
+                <th width="80" rowspan="2">分仓名</th>
+                <th width="80" rowspan="2">区域名</th>
+                <th width="240" colspan="2" style="text-align: center">首重</th>
+                <th width="80" colspan="2" style="text-align: center">续重</th>
+                <th width="70" rowspan="2">操作</th>
+            </tr>
+            <tr style="border:1px solid red">
+                <th width="80">首重(元/kg)</th>
+                <th width="80">首重(元/kg)</th>
+                <th width="80">续重(元/kg)</th>
+                <th width="80">续重(元/kg)</th>
+            </tr>
+            </thead>
+            <tbody>
+            <volist name="_list" id="data">
+                <volist name="data.result" id="vo">
+                    <tr class="show-input_{$data.id}">
+                        <td >{$data.store_name}</td>
+                        <td>{$vo.zone_name}</td>
+                        <td><?php echo str_replace(".00","",$vo['first_fee_a']); ?>/<?php echo str_replace(".00","",$vo['first_weight_a']); ?></td>
+                        <td>
+
+                            <?php if( $vo['first_fee_b'] == 0 ){
+                                    echo "---";
+                                }else{
+                                    echo str_replace(".00","",$vo['first_fee_b']). "/".str_replace(".00","",$vo['first_weight_b']);
+                                }
+                             ?>
+                        </td>
+                        <td>
+                             <?php if($vo['second_weight_end'] == 0){
+                                echo str_replace(".00","",$vo['second_fee_a'])."/1";
+                             }else{
+                                echo str_replace(".00","",$vo['second_fee_a'])."/1 ("  .str_replace(".00","",$vo['second_weight_start_a']) ."KG - ".str_replace(".00","",$vo['second_weight_end']) ."KG )";
+                             }
+                             ?>
+                        </td>
+                        <td> <?php if( $vo['second_fee_b'] == 0 ){
+                                    echo "---";
+                                }else{
+                                    echo str_replace(".00","",$vo['second_fee_b']). "/1";
+                                }
+                             ?>
+                        </td>
+                        <td class="action">
+                            <a  onclick="delRule('{$data.id}')">删除</a>
+                        </td>
+                    </tr>
+                </volist>
+            </volist>
+            </tbody>
+        </table>
+    </div>
+</block>
+
+<block name="script">
+    <script type="text/javascript">
+        function setRule(){
+            var rule = $("#set_rule").val();
+            if( rule == "" ){
+                alert("规则参数不能为空！");return;
+            }
+            $.post("index.php?s=/ReadWriteData/setRule",{rule:rule},function(data){
+                if(data == 1){
+                    alert("设置规则成功！");
+                }else{
+                    alert("发生未知错误请稍后再试！");
+                }
+            });
+        }
+        function delRule(id){
+            if(confirm("您确定要删除这条记录吗？")){
+                $.post("index.php?s=/ReadWriteData/delRule",{id:id},function(data){
+                    if(data == 1){
+                        $(".show-input_"+id).remove();
+                    }else{
+                        alert("发生未知错误请稍后再试！");
+                    }
+                });
+            }
+        }
+        function affirm(id){
+            var code = $(".show-input_"+id).find("td").eq(0).find("input").val();
+            var short_name = $(".show-input_"+id).find("td").eq(1).find("input").val();
+            var name = $(".show-input_"+id).find("td").eq(2).find("input").val();
+            var first = $(".show-input_"+id).find("td").eq(3).find("input").val();
+            if(first == "/" || first == ""){
+                alert("规则一起步费用规则不能为空");return;
+            }
+            var second = $(".show-input_"+id).find("td").eq(4).find("input").val();
+
+            if(second == "/" || second == ""){
+                alert("规则一首重费用规则不能为空");return;
+            }
+
+            var three = $(".show-input_"+id).find("td").eq(5).find("input").val();
+            if(three == "/" || three == ""){
+                alert("规则一续重费用规则不能为空");return;
+            }
+            var first_s = $(".show-input_"+id).find("td").eq(6).find("input").val();
+            if(three == "/" || three == ""){
+                alert("规则二首重费用规则不能为空");return;
+            }
+            var three_s = $(".show-input_"+id).find("td").eq(7).find("input").val();
+            if(three == "/" || three == ""){
+                alert("规则二续重费用规则不能为空");return;
+            }
+            $.ajax({
+                url: "index.php?s=/ReadWriteData/updateRule",
+                type: "POST",
+                data: { id :id , code: code, short_name: short_name, name: name, first: first, second: second, three: three,first_s:first_s ,three_s:three_s},
+                dataType: "json",
+                success: function (data) {
+                    // 此处放成功后执行的代码
+                    if(data == 1){
+                        window.location.reload();
+                    }else{
+                        alert("发生未知错误请稍后再试！");
+                    }
+                }
+            });
+        }
+        function updateData(id){
+            var length = $(".show-input_"+id).find("td").length;
+            var i = 0;
+            $(".show-input_"+id).find("td").each(function(){
+                i++;
+                if(i == length){
+                    $(".update-"+id).hide();
+                    $(".affirm-"+id).show();
+                    return;
+                }
+                var val = $(this).text();
+                var str = '<input type="text" value="'+ val +'" style="width:100%;text-align:center"/>';
+                $(this).html(str);
+            });
+
+        }
+        //导航高亮
+        highlight_subnav('{:U('AuthManager / index')}');
+    </script>
+</block>

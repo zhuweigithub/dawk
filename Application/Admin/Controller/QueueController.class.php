@@ -88,7 +88,7 @@ class QueueController extends AdminController
 
 		foreach ($result as $key => $val) {
 			$type      = $this->getRule($month, $val['sub_store']);
-			$balancing = $this->getBalancing($val['send_province'], $val['weight'], $type);
+			$balancing = $this->getBalancing($val['send_province'], $val['weight'], $type ,$val['sub_store']);
 			$arr       = array(
 				"id"        => $val['id'],
 				"balancing" => $balancing
@@ -101,6 +101,10 @@ class QueueController extends AdminController
 	private function getRule($month, $sub_store)
 	{
         set_time_limit(0);
+        $staple_rule = M("Staple_rule")->where("store_name='".$sub_store."'")->find();
+        if(count($staple_rule) > 0 ){
+            return 2;
+        }
 		$param['month']     = $month;
 		$param['sub_store'] = $sub_store;
 		$result             = M("Count_sub_store")->field("num")->where($param)->find();
@@ -118,7 +122,7 @@ class QueueController extends AdminController
 
 	}
 
-	private function getBalancing($province, $weight, $type)
+	private function getBalancing($province, $weight, $type ,$sub_store)
 	{
         set_time_limit(0);
 		$weight        = $weight / 1000;
@@ -152,7 +156,35 @@ class QueueController extends AdminController
 				$balancing   = ceil($more_weight / $weight_rule['three_weight_s']) * $charge_rule['three_charge_s'] + $charge_rule['first_charge_s'];
 			}
 
-		}
+		}else if ($type == 2) {
+            $param['store_name'] = $sub_store;
+            $staple_rule = M("Staple_rule")->field("id")->where($param)->find();
+            $params['staple_id'] = $staple_rule['id'];
+            $params['zone_id'] = $pro['zone_id'];
+            $staple_rule_ext = M("Staple_rule_ext")->where($params)->find();
+            if($staple_rule_ext['first_weight_a'] >= $weight){
+                if($staple_rule_ext['first_weight_b'] > 0 && $staple_rule_ext['first_weight_b'] >= $weight){
+                    $balancing = $staple_rule_ext['first_fee_b'];
+                }else{
+                    $balancing = $staple_rule_ext['first_fee_a'];
+                }
+            }else{
+                if($staple_rule_ext['second_weight_end'] == 0){
+                    $more_weight = $weight - $staple_rule_ext['first_weight_a'];
+                    $balancing   = ceil($more_weight / 1) * $staple_rule_ext['second_fee_a'] + $staple_rule_ext['first_fee_a'];
+                }else{
+                    if($staple_rule_ext['second_weight_end'] >= $weight){
+                        $more_weight = $weight - $staple_rule_ext['first_weight_a'];
+                        $balancing   = ceil($more_weight / 1) * $staple_rule_ext['second_fee_a'] + $staple_rule_ext['first_fee_a'];
+                    }else{
+                        $more_weight = $weight - $staple_rule_ext['first_weight_a'];
+                        $balancing   = ceil($more_weight / 1) * $staple_rule_ext['second_fee_b'] + $staple_rule_ext['first_fee_a'];
+                    }
+                }
+            }
+
+
+        }
 		return $balancing;
 	}
 
