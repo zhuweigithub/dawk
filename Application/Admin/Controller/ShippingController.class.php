@@ -33,8 +33,6 @@ class ShippingController extends AdminController
     public function addOther(){
         $sub_id = $_GET['sub_id'];
         $sub_name = $_GET["sub_name"];
-        $sub_id = 15;
-        $sub_name = "图书城";
         if(empty($sub_id) || empty($sub_name)){
             $this->error("分仓不能为空！");
         }

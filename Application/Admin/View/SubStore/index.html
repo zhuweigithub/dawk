@@ -19,7 +19,7 @@
             </div>
         </div>
     </div>
-    <div style="width:35%;float:right;border:1px solid rgba(255, 251, 129, 0.49);height: 500px;background: rgba(248, 255, 220, 0.29);margin-right:5%;margin-top: 1rem  ">
+    <div style="width:25%;float:right;border:1px solid rgba(255, 251, 129, 0.49);height: 500px;background: rgba(248, 255, 220, 0.29);margin-right:5%;margin-top: 1rem  ">
         <div id="add_sub_store" style="display: none">
             <label style="font-weight: bold;font-size: 20px;display: block;">添加分仓:</label>
             <div class="controls" style="margin-top: 1rem">
@@ -54,15 +54,15 @@
     </div>
 
     <input class="group_id" type="hidden" value="{$group_id}"/>
-    <div class="data-table table-striped" style="width: 55%">
+    <div class="data-table table-striped" style="width: 65%">
         <table>
             <thead>
             <tr>
-                <th width="50">ID</th>
-                <th width="120">分仓名</th>
-                <th width="120">客户名</th>
+                <th width="30">ID</th>
+                <th width="100">分仓名</th>
+                <th width="100">客户名</th>
                <!-- <th width="50">状态</th>-->
-                <th width="80">操作</th>
+                <th width="150">操作</th>
             </tr>
             </thead>
             <tbody>
@@ -73,7 +73,8 @@
                     <td>{$vo.customer_name}</td>
                     <td class="action">
                         <a  onclick="editSubStore('{$vo.id}')" >编 辑</a> |
-                        <a  onclick="delSubStore('{$vo.id}')" >删 除</a>
+                        <a  onclick="delSubStore('{$vo.id}')" >删 除</a> |
+                        <a href="{:U('Shipping/addOther?sub_id='.$vo['id'].'&sub_name='.$vo['sub_store_name'])}">添加分区资费</a>
                        <!-- <a  onclick="bandMember(this)">调配仓管</a>-->
                     </td>
                 </tr>

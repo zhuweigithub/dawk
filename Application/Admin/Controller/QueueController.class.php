@@ -5,10 +5,9 @@ use Think\Exception;
 
 class QueueController extends AdminController
 {
-	public function test(){
-		echo	date("Y-m",strtotime("-4months",strtotime(date("Y-m", time()))));
-	}
-
+    public function __construct(){
+        $this->runQueue();
+    }
 	public function runQueue()
 	{
         set_time_limit(0);
@@ -17,7 +16,7 @@ class QueueController extends AdminController
         $today = (int)date("d",time());
 
         //todo 当前时间为配置时间则运行处理队列
-        if($today != $rule['config_value']){
+        if($today == $rule['config_value']){
 		for($i = 1;$i < 5 ;$i++ ){
 		$month = date("Y-m",strtotime("-" . $i . "months",strtotime(date("Y-m", time()))));
 		$list  = M("Send_month")->where("month= '" . $month . "'")->find();
@@ -127,7 +126,7 @@ class QueueController extends AdminController
         set_time_limit(0);
 		$weight        = $weight / 1000;
 		$param['name'] = $province;
-		$pro           = M("Province")->field("id")->where($param)->find();
+		$pro           = M("Province")->field("id,zone_id")->where($param)->find();
 		if (count($pro) <= 0) {
 			\Think\Log::record(time() . '===Queue->getBalancing ,没有找到省份，信息需补全，');
 			return 0;
@@ -157,8 +156,10 @@ class QueueController extends AdminController
 			}
 
 		}else if ($type == 2) {
+
             $param['store_name'] = $sub_store;
             $staple_rule = M("Staple_rule")->field("id")->where($param)->find();
+
             $params['staple_id'] = $staple_rule['id'];
             $params['zone_id'] = $pro['zone_id'];
             $staple_rule_ext = M("Staple_rule_ext")->where($params)->find();
