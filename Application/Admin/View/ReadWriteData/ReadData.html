@@ -15,6 +15,7 @@
             <input type="text" name="customer_name" class="text input" value="{$param.customer_name}" placeholder="请输入客户名" style="width: 150px;margin-left:30px " />
             <button class="btn" id="search" url="{:U('ReadData')}">查询</button>
 			<button class="btn" onClick="originalExport()">导出Excel</button>
+			<button class="btn" onClick="dataExport()">某日汇总Excel</button>
         </div>
     </div>
     <div class="data-table table-striped">
@@ -122,8 +123,27 @@
 				alert("开始时间不能大于结束时间！");return;
 			}
             var customer_name = $("input[name=customer_name]").val();
-			window.location.href = "index.php?s=/Excel/originalExport/start_time/"+ start_time +"/end_time/"+end_time+"/customer_name/"+customer_name;
+			window.location.href = "index.php?s=/Excel/originalExport/start_time/"+ start_time +"/end_time/"+end_time+"/customer_name/"+customer_name+"/is_data/0";
 		}
+        function dataExport(){
+            var start_time = $("input[name=start_time]").val();
+            var end_time = $("input[name=end_time]").val();
+
+            if(start_time == ""){
+                alert("请选开始时间！");return;
+            }
+            if(end_time == ""){
+                alert("请选择结束时间！");return;
+            }
+            if(start_time > end_time){
+                alert("开始时间不能大于结束时间！");return;
+            }
+            if(start_time != end_time){
+                alert("时间只能是某一天！");return;
+            }
+            var customer_name = $("input[name=customer_name]").val();
+            window.location.href = "index.php?s=/Excel/originalExport/start_time/"+ start_time +"/end_time/"+end_time+"/customer_name/"+customer_name+"/is_data/1";
+        }
     </script>
 
 </block>

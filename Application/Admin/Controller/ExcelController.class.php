@@ -318,7 +318,7 @@ class ExcelController extends AdminController
 		$xlsWriter->save("php://output");
 		exit;
 	}
-	public function getDetailList($start_time,$end_time,$customer_name){
+	public function getDetailList($start_time,$end_time,$customer_name,$is_data){
         if(!empty($customer_name)){
             $map['customer_name'] = array('like',"%".$customer_name."%");
         }
@@ -328,9 +328,20 @@ class ExcelController extends AdminController
         }
 		$map['in_out_date'][] = array('egt',$start_time);
 		$map['in_out_date'][] = array('elt',$end_time);
-		$result = M("Send_detail")->field("id,express_number,in_out_date,customer_name,sub_store,send_province,send_city,weight,post_money,balancing,(balancing-post_money) as gap_money")
-                                  ->where($map)
-                                  ->select();
+        if($is_data == 1){
+            $result = M("Send_detail")->field("in_out_date,count(1) as num,sub_store,sum(post_money) as post_money, sum(balancing) as balancing")
+                ->where($map)
+                ->group("sub_store")
+                ->select();
+            foreach($result as $key=>$val){
+                $result[$key]['gap_money'] = $result[$key]['balancing'] - $result[$key]['post_money'];
+            }
+        }else{
+            $result = M("Send_detail")->field("id,express_number,in_out_date,customer_name,sub_store,send_province,send_city,weight,post_money,balancing,(balancing-post_money) as gap_money")
+                ->where($map)
+                ->select();
+        }
+
         return $result;
 	}
 
@@ -339,7 +350,8 @@ class ExcelController extends AdminController
 		$start_time = $_GET['start_time'];
 		$end_time = $_GET['end_time'];
 		$customer_name = $_GET['customer_name'];
-		$result = $this->getDetailList($start_time , $end_time,$customer_name);
+		$is_data       = $_GET['is_data'];
+		$result = $this->getDetailList($start_time , $end_time,$customer_name,$is_data);
 		$total = count($result);
 		if ($total > 1000000) {
 			exit('最多导出1000000条订单');
@@ -349,55 +361,93 @@ class ExcelController extends AdminController
 		require_once 'Application/Admin/Lib/Org/Util/PHPExcel.php';
 		$excel     = new \PHPExcel();
 		$xlsWriter = new \PHPExcel_Writer_Excel5($excel);
+         if($is_data == 1){
+             $cells = array(
+                 'A' => array('title' => '客户名', 'width' => '25', 'value_key' => 'sub_store', 'format' => 'string'),
+                 'B' => array('title' => '收寄件数', 'width' => '15', 'value_key' => 'num'),
+                 'C' => array('title' => '系统结算', 'width' => '20', 'value_key' => 'post_money'),
+                 'D' => array('title' => '实际结算', 'width' => '20', 'value_key' => 'balancing'),
+                 'E' => array('title' => '结算差额', 'width' => '20', 'value_key' => 'gap_money')
+             );
+             $row = 1;
+             foreach ($cells as $key => $value) {
+                 $excel->getActiveSheet()->setCellValue($key . $row, $value['title']);
+                 if (isset($value['width'])) {
+                     $excel->getActiveSheet()->getColumnDimension($key)->setWidth($value['width']);
+                 } else {
+                     $excel->getActiveSheet()->getColumnDimension($key)->setAutoSize(true);
+                 }
+                 $excel->getActiveSheet()->getStyle($key . $row)->getFill()->setFillType(\PHPExcel_Style_Fill::FILL_SOLID);
+                 $excel->getActiveSheet()->getStyle($key . $row)->getFill()->getStartColor()->setARGB('FF808080');
+             }
 
-			$cells = array(
-				'A' => array('title' => '序号', 'width' => '30', 'value_key' => 'id','format' => 'zw'),
-				'B' => array('title' => '收寄日期', 'width' => '15', 'value_key' => 'in_out_date' ,'format' => 'date'),
-				'C' => array('title' => '大宗客户', 'width' => '20', 'value_key' => 'customer_name','format' => 'string'),
-				'D' => array('title' => '分仓', 'width' => '20', 'value_key' => 'sub_store','format' => 'string'),
-				'E' => array('title' => '邮件号码', 'width' => '20', 'value_key' => 'express_number','format' => 'string'),
-				'F' => array('title' => '寄达省', 'width' => '20', 'value_key' => 'send_province','format' => 'string'),
-				'G' => array('title' => '寄达市', 'width' => '20', 'value_key' => 'send_city','format' => 'string'),
-				'H' => array('title' => '重量(克)', 'width' => '20', 'value_key' => 'weight'),
-				'I' => array('title' => '总邮资(元)', 'width' => '20', 'value_key' => 'post_money'),
-				'J' => array('title' => '结算资费', 'width' => '20', 'value_key' => 'balancing'),
-				'K' => array('title' => '资费差额', 'width' => '20', 'value_key' => 'gap_money'),
-				'L' => array('title' => '修改资费', 'width' => '20', 'value_key' => ''),
-				'M' => array('title' => '修改后差额', 'width' => '20', 'value_key' => '')
-			);
-		$row = 1;
-		foreach ($cells as $key => $value) {
-			$excel->getActiveSheet()->setCellValue($key . $row, $value['title']);
-			if (isset($value['width'])) {
-				$excel->getActiveSheet()->getColumnDimension($key)->setWidth($value['width']);
-			} else {
-				$excel->getActiveSheet()->getColumnDimension($key)->setAutoSize(true);
-			}
-			$excel->getActiveSheet()->getStyle($key . $row)->getFill()->setFillType(\PHPExcel_Style_Fill::FILL_SOLID);
-			$excel->getActiveSheet()->getStyle($key . $row)->getFill()->getStartColor()->setARGB('FF808080');
-		}
+             foreach ($result as $key=>$items) {
+                 ++$row;
+                 foreach ($cells as $key => $value) {
+                     if (is_string($value['value_key'])) {
+                         if ($value['format'] == 'string') {
+                             $excel->getActiveSheet()->setCellValueExplicit($key . $row, $items[$value['value_key']], \PHPExcel_Cell_DataType::TYPE_STRING);
+                         } elseif ($value['format'] == 'date') {
+                             $datetime = !empty($items[$value['value_key']]) ? str_replace("00:00:00", "", $items[$value['value_key']])  : '';
+                             $excel->getActiveSheet()->setCellValue($key . $row, $datetime);
+                         } else {
+                             $tmpValue = $items[$value['value_key']];
+                             $excel->getActiveSheet()->setCellValue($key . $row, $tmpValue);
+                         }
+                     }
+                 }
+             }
+             $outputFileName = $start_time.'客户系统资费与实际资费汇总.xls';
+         }else{
+                $cells = array(
+                    'A' => array('title' => '序号', 'width' => '30', 'value_key' => 'id','format' => 'zw'),
+                    'B' => array('title' => '收寄日期', 'width' => '15', 'value_key' => 'in_out_date' ,'format' => 'date'),
+                    'C' => array('title' => '大宗客户', 'width' => '20', 'value_key' => 'customer_name','format' => 'string'),
+                    'D' => array('title' => '分仓', 'width' => '20', 'value_key' => 'sub_store','format' => 'string'),
+                    'E' => array('title' => '邮件号码', 'width' => '20', 'value_key' => 'express_number','format' => 'string'),
+                    'F' => array('title' => '寄达省', 'width' => '20', 'value_key' => 'send_province','format' => 'string'),
+                    'G' => array('title' => '寄达市', 'width' => '20', 'value_key' => 'send_city','format' => 'string'),
+                    'H' => array('title' => '重量(克)', 'width' => '20', 'value_key' => 'weight'),
+                    'I' => array('title' => '总邮资(元)', 'width' => '20', 'value_key' => 'post_money'),
+                    'J' => array('title' => '结算资费', 'width' => '20', 'value_key' => 'balancing'),
+                    'K' => array('title' => '资费差额', 'width' => '20', 'value_key' => 'gap_money'),
+                    'L' => array('title' => '修改资费', 'width' => '20', 'value_key' => ''),
+                    'M' => array('title' => '修改后差额', 'width' => '20', 'value_key' => '')
+                );
+            $row = 1;
+            foreach ($cells as $key => $value) {
+                $excel->getActiveSheet()->setCellValue($key . $row, $value['title']);
+                if (isset($value['width'])) {
+                    $excel->getActiveSheet()->getColumnDimension($key)->setWidth($value['width']);
+                } else {
+                    $excel->getActiveSheet()->getColumnDimension($key)->setAutoSize(true);
+                }
+                $excel->getActiveSheet()->getStyle($key . $row)->getFill()->setFillType(\PHPExcel_Style_Fill::FILL_SOLID);
+                $excel->getActiveSheet()->getStyle($key . $row)->getFill()->getStartColor()->setARGB('FF808080');
+            }
 
-		foreach ($result as $key=>$items) {
-			++$row;
-			foreach ($cells as $key => $value) {
-				if (is_string($value['value_key'])) {
-					if ($value['format'] == 'string') {
-						$excel->getActiveSheet()->setCellValueExplicit($key . $row, $items[$value['value_key']], \PHPExcel_Cell_DataType::TYPE_STRING);
-					}elseif ($value['format'] == 'zw') {
-                        $tmpValue = $row-1;
-                        $excel->getActiveSheet()->setCellValue($key . $row, $tmpValue);
+            foreach ($result as $key=>$items) {
+                ++$row;
+                foreach ($cells as $key => $value) {
+                    if (is_string($value['value_key'])) {
+                        if ($value['format'] == 'string') {
+                            $excel->getActiveSheet()->setCellValueExplicit($key . $row, $items[$value['value_key']], \PHPExcel_Cell_DataType::TYPE_STRING);
+                        }elseif ($value['format'] == 'zw') {
+                            $tmpValue = $row-1;
+                            $excel->getActiveSheet()->setCellValue($key . $row, $tmpValue);
+                        }
+                        elseif ($value['format'] == 'date') {
+                            $datetime = !empty($items[$value['value_key']]) ? str_replace("00:00:00", "", $items[$value['value_key']])  : '';
+                            $excel->getActiveSheet()->setCellValue($key . $row, $datetime);
+                        } else {
+                            $tmpValue = $items[$value['value_key']];
+                            $excel->getActiveSheet()->setCellValue($key . $row, $tmpValue);
+                        }
                     }
-                    elseif ($value['format'] == 'date') {
-						$datetime = !empty($items[$value['value_key']]) ? str_replace("00:00:00", "", $items[$value['value_key']])  : '';
-						$excel->getActiveSheet()->setCellValue($key . $row, $datetime);
-					} else {
-						$tmpValue = $items[$value['value_key']];
-						$excel->getActiveSheet()->setCellValue($key . $row, $tmpValue);
-					}
-				}
-			}
-		}
-		$outputFileName = $start_time .'—'. $end_time .'系统资费与实际资费明细.xls';
+                }
+            }
+            $outputFileName = $start_time .'—'. $end_time .'系统资费与实际资费明细.xls';
+         }
 		header("Content-Type: application/force-download");
 		header("Content-Type: application/octet-stream");
 		header("Content-Type: application/download");
