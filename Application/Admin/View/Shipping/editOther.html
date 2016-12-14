@@ -1,0 +1,417 @@
+<extend name="Public/base"/>
+
+<block name="body">
+
+	<div style="padding-left:10px;width:35%;float:right;border:1px solid rgba(255, 251, 129, 0.49);border: 1px dotted #1115ff;height: 500px;background: #fffc59;margin-right:5%;margin-top: 1rem  ">
+		<div style="margin-top:0.5rem;width: 100%;height: 3.5rem;">
+			<span style="font-size: 16px;font-weight: bold;margin-top: 1rem;display: inline-block">一区：</span><br/>
+			<volist name="result" id="data">
+				<if condition="$data['zone_id'] eq 1 ">
+					<span style="margin-left: 2rem">{$data.name}</span>
+				</if>
+			</volist>
+			<br/> <span style="font-size: 16px;font-weight: bold;margin-top: 1rem;display: inline-block">二区：</span><br/>
+			<volist name="result" id="data">
+				<if condition="$data['zone_id'] eq 2 ">
+					<span style="margin-left: 2rem">{$data.name}</span>
+				</if>
+			</volist>
+			<br/> <span style="font-size: 16px;font-weight: bold;margin-top: 1rem;display: inline-block">三区：</span><br/>
+			<volist name="result" id="data">
+				<if condition="$data['zone_id'] eq 3 ">
+					<span style="margin-left: 1.5rem">{$data.name}</span>
+				</if>
+			</volist>
+			<br/> <span style="font-size: 16px;font-weight: bold;margin-top: 1rem;display: inline-block">四区：</span><br/>
+			<volist name="result" id="data">
+				<if condition="$data['zone_id'] eq 4 ">
+					<span style="margin-left: 2rem">{$data.name}</span>
+				</if>
+			</volist>
+			<br/> <span style="font-size: 16px;font-weight: bold;margin-top: 1rem;display: inline-block">五区：</span><br/>
+			<volist name="result" id="data">
+				<if condition="$data['zone_id'] eq 5 ">
+					<span style="margin-left: 2rem">{$data.name}</span>
+				</if>
+			</volist>
+
+
+		</div>
+	</div>
+	<div class="data-table table-striped" style="width: 55%">
+		<div class="form-horizontal">
+			<div class="form-item">
+				<label class="item-label">分仓名：<span id="sub_store" data-id="{$sub_id}">{$sub_name|default=''}</span></label>
+			</div>
+			<div class="form-item">
+				<label class="item-label">首重<span class="check-tips">（起始重量）</span></label>
+				<div class="controls">
+					<div style="width: 15%;float: left;min-width: 150px">
+						<input type="text" class="text input-small" name="first_weight" value="{$list.0.first_weight_a}" > (KG)
+					</div>
+					<input type="hidden" id="yq" value="{$list.0.id}"/>
+					<input type="hidden" id="eq" value="{$list.1.id}"/>
+					<input type="hidden" id="sq" value="{$list.2.id}"/>
+					<input type="hidden" id="siq" value="{$list.3.id}"/>
+					<input type="hidden" id="wq" value="{$list.4.id}"/>
+					<div style="width: 60%;float: left;line-height: 2rem">
+						资费：<br/>
+
+						一区： <input type="text" class="text input-small" name="first_weight_fee_1" value="{$list.0.first_fee_a}"> (元)
+						<?php if($list['0']['first_weight_b'] > 0){?>
+							<span style="font-size: 20px;display: inline-block;width: 30px;cursor: pointer;text-align: center" data-id="2" onClick="show_first(this)">-</span>
+							<div class="show_first" style="display: inline-block;margin-left:3rem;" data-node="1">
+							小于<input type="text" class="text input-small" name="first_gt_weight_1" style="width: 50px"  value="<?php echo $list[0]['first_weight_b'];?>">(KG)
+							<input type="text" style="width: 50px" class="text input-small" name="first_gt_weight_fee_1"  value="<?php echo $list[0]['first_fee_b'];?>"> (元)
+						<?php }else{ ?>
+							<span style="font-size: 20px;display: inline-block;width: 30px;cursor: pointer;text-align: center" data-id="1" onClick="show_first(this)">+</span>
+							<div class="show_first" style="display: inline-block;margin-left:3rem;" data-node="1">
+						<?php }?>
+						</div><br/>
+						二区： <input type="text" class="text input-small" name="first_weight_fee_2" value="{$list.1.first_fee_a}"> (元)
+
+								<?php if($list['1']['first_weight_b'] > 0){?>
+								<span style="font-size: 20px;display: inline-block;width: 30px;cursor: pointer;text-align: center" data-id="2" onClick="show_first(this)">-</span>
+								<div class="show_first" style="display: inline-block;margin-left:3rem;" data-node="2">
+									小于<input type="text" class="text input-small" name="first_gt_weight_2" style="width: 50px" value="<?php echo $list[1]['first_weight_b'];?>">(KG)
+									<input type="text" style="width: 50px" class="text input-small" name="first_gt_weight_fee_2" value="<?php echo $list[1]['first_fee_b'];?>"> (元)
+									<?php }else{ ?>
+									<span style="font-size: 20px;display: inline-block;width: 30px;cursor: pointer;text-align: center" data-id="1" onClick="show_first(this)">+</span>
+									<div class="show_first" style="display: inline-block;margin-left:3rem;" data-node="2">
+										<?php }?>
+						</div><br/>
+						三区： <input type="text" class="text input-small" name="first_weight_fee_3" value="{$list.2.first_fee_a}"> (元)
+
+									<?php if($list['2']['first_weight_b'] > 0){?>
+									<span style="font-size: 20px;display: inline-block;width: 30px;cursor: pointer;text-align: center" data-id="2" onClick="show_first(this)">-</span>
+									<div class="show_first" style="display: inline-block;margin-left:3rem;" data-node="3">
+										小于<input type="text" class="text input-small" name="first_gt_weight_3" style="width: 50px" value="<?php echo $list[2]['first_weight_b'];?>">(KG)
+										<input type="text" style="width: 50px" class="text input-small" name="first_gt_weight_fee_3" value="<?php echo $list[2]['first_fee_b'];?>">  (元)
+										<?php }else{ ?>
+										<span style="font-size: 20px;display: inline-block;width: 30px;cursor: pointer;text-align: center" data-id="1" onClick="show_first(this)">+</span>
+										<div class="show_first" style="display: inline-block;margin-left:3rem;" data-node="3">
+											<?php }?>
+						</div><br/>
+						四区： <input type="text" class="text input-small" name="first_weight_fee_4" value="{$list.3.first_fee_a}"> (元)
+
+							<?php if($list['3']['first_weight_b'] > 0){?>
+							<span style="font-size: 20px;display: inline-block;width: 30px;cursor: pointer;text-align: center" data-id="2" onClick="show_first(this)">-</span>
+							<div class="show_first" style="display: inline-block;margin-left:3rem;" data-node="3">
+								小于<input type="text" class="text input-small" name="first_gt_weight_4" style="width: 50px" value="<?php echo $list[3]['first_weight_b'];?>">(KG)
+								<input type="text" style="width: 50px" class="text input-small" name="first_gt_weight_fee_4" value="<?php echo $list[3]['first_fee_b'];?>"> (元)
+								<?php }else{ ?>
+								<span style="font-size: 20px;display: inline-block;width: 30px;cursor: pointer;text-align: center" data-id="1" onClick="show_first(this)">+</span>
+								<div class="show_first" style="display: inline-block;margin-left:3rem;" data-node="4">
+									<?php }?>
+						</div><br/>
+						五区： <input type="text" class="text input-small" name="first_weight_fee_5" value="{$list.4.first_fee_a}" > (元)
+
+							<?php if($list['4']['first_weight_b'] > 0){?>
+							<span style="font-size: 20px;display: inline-block;width: 30px;cursor: pointer;text-align: center" data-id="2" onClick="show_first(this)">-</span>
+							<div class="show_first" style="display: inline-block;margin-left:3rem;" data-node="3">
+								小于<input type="text" class="text input-small" name="first_gt_weight_5" style="width: 50px" value="<?php echo $list[4]['first_weight_b'];?>">(KG)
+								<input type="text" style="width: 50px" class="text input-small" name="first_gt_weight_fee_5"  value="<?php echo $list[4]['first_fee_b'];?>"> (元)
+								<?php }else{ ?>
+								<span style="font-size: 20px;display: inline-block;width: 30px;cursor: pointer;text-align: center" data-id="1" onClick="show_first(this)">+</span>
+								<div class="show_first" style="display: inline-block;margin-left:3rem;" data-node="5">
+									<?php }?>
+						</div><br/>
+
+					</div>
+				</div>
+			</div>
+			<div class="form-item">
+				<label class="item-label">续重<span class="check-tips">（第二个重量不填表示之后每1KG资费多少元）</span></label>
+				<div class="controls">
+					一区： <input type="text" class="text input-small" name="second_weight_start_1" style="width: 30px"  value="{$list.0.second_weight_start_a}"> -
+					<input type="text" class="text input-small" name="second_weight_end_1" style="width: 30px" value="{$list.0.second_weight_end}" >(KG) 资费
+					<input type="text" class="text input-small" name="second_weight_fee_1" value="{$list.0.second_fee_a}" > (元)
+					<?php if($list['0']['second_weight_start_b'] > 0){?>
+					<span style="font-size: 20px;display: inline-block;width: 30px;cursor: pointer;text-align: center" data-id="2" onClick="show_second(this)">-</span>
+					<div style="display: inline-block;margin-left:7rem;" data-node="1" >
+
+						<input type="text" class="text input-small" name="second_lt_weight_1" style="width: 30px" value="<?php echo $list['0']['second_weight_start_b']; ?>"> (KG) 资费
+						<input type="text" class="text input-small" name="second_lt_fee_1" value="<?php echo $list['0']['second_fee_b']; ?>"> (元)
+					</div>
+					<?php }else{ ?>
+					<span style="font-size: 20px;display: inline-block;width: 30px;cursor: pointer;text-align: center" data-id="1" onClick="show_second(this)">+</span>
+					<div style="display: inline-block;margin-left:7rem;" data-node="1" ></div>
+					<?php }?>
+					<br/>
+					二区： <input type="text" class="text input-small" name="second_weight_start_2" style="width: 30px" value="{$list.1.second_weight_start_a}" > -
+					<input type="text" class="text input-small" name="second_weight_end_2" style="width: 30px" value="{$list.1.second_weight_end}">(KG) 资费
+					<input type="text" class="text input-small" name="second_weight_fee_2" value="{$list.1.second_fee_a}"> (元)
+					<?php if($list['1']['second_weight_start_b'] > 0){?>
+					<span style="font-size: 20px;display: inline-block;width: 30px;cursor: pointer;text-align: center" data-id="2" onClick="show_second(this)">-</span>
+					<div style="display: inline-block;margin-left:7rem;" data-node="2" >
+
+						<input type="text" class="text input-small" name="second_lt_weight_2" style="width: 30px" value="<?php echo $list['1']['second_weight_start_b']; ?>"> (KG) 资费
+						<input type="text" class="text input-small" name="second_lt_fee_2" value="<?php echo $list['1']['second_fee_b']; ?>"> (元)
+					</div>
+					<?php }else{ ?>
+					<span style="font-size: 20px;display: inline-block;width: 30px;cursor: pointer;text-align: center" data-id="1" onClick="show_second(this)">+</span>
+					<div style="display: inline-block;margin-left:7rem;" data-node="2" ></div>
+					<?php }?>
+					<br/>
+					三区： <input type="text" class="text input-small" name="second_weight_start_3" style="width: 30px"  value="{$list.2.second_weight_start_a}"> -
+					<input type="text" class="text input-small" name="second_weight_end_3" style="width: 30px"  value="{$list.2.second_weight_end}">(KG) 资费
+					<input type="text" class="text input-small" name="second_weight_fee_3"  value="{$list.2.second_fee_a}"> (元)
+					<?php if($list['2']['second_weight_start_b'] > 0){?>
+					<span style="font-size: 20px;display: inline-block;width: 30px;cursor: pointer;text-align: center" data-id="2" onClick="show_second(this)">-</span>
+					<div style="display: inline-block;margin-left:7rem;" data-node="3" >
+
+						<input type="text" class="text input-small" name="second_lt_weight_3" style="width: 30px" value="<?php echo $list['2']['second_weight_start_b']; ?>"> (KG) 资费
+						<input type="text" class="text input-small" name="second_lt_fee_3" value="<?php echo $list['2']['second_fee_b']; ?>"> (元)
+					</div>
+					<?php }else{ ?>
+					<span style="font-size: 20px;display: inline-block;width: 30px;cursor: pointer;text-align: center" data-id="1" onClick="show_second(this)">+</span>
+					<div style="display: inline-block;margin-left:7rem;" data-node="3" ></div>
+					<?php }?>
+					<br/>
+					四区： <input type="text" class="text input-small" name="second_weight_start_4" style="width: 30px" value="{$list.3.second_weight_start_a}"> -
+					<input type="text" class="text input-small" name="second_weight_end_4" style="width: 30px" value="{$list.3.second_weight_end}">(KG) 资费
+					<input type="text" class="text input-small" name="second_weight_fee_4" value="{$list.3.second_fee_a}"> (元)
+					<?php if($list['3']['second_weight_start_b'] > 0){?>
+					<span style="font-size: 20px;display: inline-block;width: 30px;cursor: pointer;text-align: center" data-id="2" onClick="show_second(this)">-</span>
+					<div style="display: inline-block;margin-left:7rem;" data-node="4" >
+
+						<input type="text" class="text input-small" name="second_lt_weight_4" style="width: 30px" value="<?php echo $list['3']['second_weight_start_b']; ?>"> (KG) 资费
+						<input type="text" class="text input-small" name="second_lt_fee_4" value="<?php echo $list['3']['second_fee_b']; ?>"> (元)
+					</div>
+					<?php }else{ ?>
+					<span style="font-size: 20px;display: inline-block;width: 30px;cursor: pointer;text-align: center" data-id="1" onClick="show_second(this)">+</span>
+					<div style="display: inline-block;margin-left:7rem;" data-node="4" ></div>
+					<?php }?>
+					<br/>
+					五区： <input type="text" class="text input-small" name="second_weight_start_5" style="width: 30px" value="{$list.4.second_weight_start_a}"> -
+					<input type="text" class="text input-small" name="second_weight_end_5" style="width: 30px" value="{$list.4.second_weight_end}">(KG) 资费
+					<input type="text" class="text input-small" name="second_weight_fee_5" value="{$list.4.second_fee_a}"> (元)
+					<?php if($list['4']['second_weight_start_b'] > 0){?>
+					<span style="font-size: 20px;display: inline-block;width: 30px;cursor: pointer;text-align: center" data-id="2" onClick="show_second(this)">-</span>
+					<div style="display: inline-block;margin-left:7rem;" data-node="5" >
+
+						<input type="text" class="text input-small" name="second_lt_weight_5" style="width: 30px" value="<?php echo $list['4']['second_weight_start_b']; ?>"> (KG) 资费
+						<input type="text" class="text input-small" name="second_lt_fee_5" value="<?php echo $list['4']['second_fee_b']; ?>"> (元)
+					</div>
+					<?php }else{ ?>
+					<span style="font-size: 20px;display: inline-block;width: 30px;cursor: pointer;text-align: center" data-id="1" onClick="show_second(this)">+</span>
+					<div style="display: inline-block;margin-left:7rem;" data-node="5" ></div>
+					<?php }?>
+					<br/>
+
+				</div>
+			</div>
+
+			<div class="form-item">
+				<button class="btn submit-btn" id="submit" onclick="submit_ajax()">确 定</button>
+				<button class="btn btn-return" onclick="javascript:history.back(-1);return false;">返 回</button>
+			</div>
+		</div>
+	</div>
+</block>
+
+<block name="script">
+<script type="text/javascript">
+function submit_ajax(){
+	var first_weight = $("input[name=first_weight]").val();
+	var first_weight_fee_1 = $("input[name=first_weight_fee_1]").val();
+	var first_weight_fee_2 = $("input[name=first_weight_fee_2]").val();
+	var first_weight_fee_3 = $("input[name=first_weight_fee_3]").val();
+	var first_weight_fee_4 = $("input[name=first_weight_fee_4]").val();
+	var first_weight_fee_5 = $("input[name=first_weight_fee_5]").val();
+	if(first_weight == "" || first_weight_fee_1 =="" || first_weight_fee_2 == "" || first_weight_fee_3 == "" || first_weight_fee_4 == "" || first_weight_fee_5 == ""){
+		alert("首重分区资费不能为空！");return;
+	}
+
+	var first_gt_weight_1 = $("input[name=first_gt_weight_1]").val();
+	var first_gt_weight_fee_1 = $("input[name=first_gt_weight_fee_1]").val();
+	var first_gt_weight_2 = $("input[name=first_gt_weight_2]").val();
+	var first_gt_weight_fee_2 = $("input[name=first_gt_weight_fee_2]").val();
+	var first_gt_weight_3 = $("input[name=first_gt_weight_3]").val();
+	var first_gt_weight_fee_3 = $("input[name=first_gt_weight_fee_3]").val();
+	var first_gt_weight_4 = $("input[name=first_gt_weight_4]").val();
+	var first_gt_weight_fee_4 = $("input[name=first_gt_weight_fee_4]").val();
+	var first_gt_weight_5 = $("input[name=first_gt_weight_5]").val();
+	var first_gt_weight_fee_5 = $("input[name=first_gt_weight_fee_5]").val();
+
+
+
+	var second_weight_start_1 = $("input[name=second_weight_start_1]").val();
+	var second_weight_end_1 = $("input[name=second_weight_end_1]").val();
+	var second_weight_fee_1 = $("input[name=second_weight_fee_1]").val();
+	var second_weight_start_2 = $("input[name=second_weight_start_2]").val();
+	var second_weight_end_2 = $("input[name=second_weight_end_2]").val();
+	var second_weight_fee_2 = $("input[name=second_weight_fee_2]").val();
+	var second_weight_start_3 = $("input[name=second_weight_start_3]").val();
+	var second_weight_end_3 = $("input[name=second_weight_end_3]").val();
+	var second_weight_fee_3 = $("input[name=second_weight_fee_3]").val();
+	var second_weight_start_4 = $("input[name=second_weight_start_4]").val();
+	var second_weight_end_4 = $("input[name=second_weight_end_4]").val();
+	var second_weight_fee_4 = $("input[name=second_weight_fee_4]").val();
+	var second_weight_start_5 = $("input[name=second_weight_start_5]").val();
+	var second_weight_end_5 = $("input[name=second_weight_end_5]").val();
+	var second_weight_fee_5 = $("input[name=second_weight_fee_5]").val();
+
+	if(second_weight_start_1 == "" || second_weight_fee_1 =="" || second_weight_start_2 == "" || second_weight_fee_2 =="" ||
+			second_weight_start_3 == "" || second_weight_fee_3 =="" || second_weight_start_4 == "" || second_weight_fee_4 =="" ||
+			second_weight_start_5 == "" || second_weight_fee_5 ==""){
+		alert("续重分区资费不能为空！");return;
+	}
+
+	var second_lt_weight_1 = $("input[name=second_lt_weight_1]").val();
+	var second_lt_fee_1 = $("input[name=second_lt_fee_1]").val();
+	var second_lt_weight_2 = $("input[name=second_lt_weight_2]").val();
+	var second_lt_fee_2 = $("input[name=second_lt_fee_2]").val();
+	var second_lt_weight_3 = $("input[name=second_lt_weight_3]").val();
+	var second_lt_fee_3 = $("input[name=second_lt_fee_3]").val();
+	var second_lt_weight_4 = $("input[name=second_lt_weight_4]").val();
+	var second_lt_fee_4 = $("input[name=second_lt_fee_4]").val();
+	var second_lt_weight_5 = $("input[name=second_lt_weight_5]").val();
+	var second_lt_fee_5 = $("input[name=second_lt_fee_5]").val();
+	var  staple_arr = {};
+	staple_arr['store_id'] = $('#sub_store').data('id');
+	staple_arr['store_name'] = $('#sub_store').html();
+	staple_arr['first_weight'] = first_weight;
+	var  staple_ext_1 = {};
+	staple_ext_1['id'] = $("#yq").val();
+	staple_ext_1['zone_id'] = 1;
+	staple_ext_1['zone_name'] = "一区";
+	staple_ext_1['first_weight_a'] = filter(first_weight);
+	staple_ext_1['first_fee_a'] = filter(first_weight_fee_1);
+	staple_ext_1['first_weight_b'] = filter(first_gt_weight_1);
+	staple_ext_1['first_fee_b'] = filter(first_gt_weight_fee_1);
+	staple_ext_1['second_weight_start_a'] = filter(second_weight_start_1);
+	staple_ext_1['second_weight_end'] = filter(second_weight_end_1);
+	staple_ext_1['second_fee_a'] = filter(second_weight_fee_1);
+	staple_ext_1['second_weight_start_b'] = filter(second_lt_weight_1);
+	staple_ext_1['second_fee_b'] = filter(second_lt_fee_1);
+
+	var  staple_ext_2 = {};
+	staple_ext_2['id'] = $("#eq").val();
+	staple_ext_2['zone_id'] = 2;
+	staple_ext_2['zone_name'] = "二区";
+	staple_ext_2['first_weight_a'] = filter(first_weight);
+	staple_ext_2['first_fee_a'] = filter(first_weight_fee_2);
+	staple_ext_2['first_weight_b'] = filter(first_gt_weight_2);
+	staple_ext_2['first_fee_b'] = filter(first_gt_weight_fee_2);
+	staple_ext_2['second_weight_start_a'] = filter(second_weight_start_2);
+	staple_ext_2['second_weight_end'] = filter(second_weight_end_2);
+	staple_ext_2['second_fee_a'] = filter(second_weight_fee_2);
+	staple_ext_2['second_weight_start_b'] = filter(second_lt_weight_2);
+	staple_ext_2['second_fee_b'] = filter(second_lt_fee_2);
+
+	var  staple_ext_3 = {};
+	staple_ext_3['id'] = $("#sq").val();
+	staple_ext_3['zone_id'] = 3;
+	staple_ext_3['zone_name'] = "三区";
+	staple_ext_3['first_weight_a'] = filter(first_weight);
+	staple_ext_3['first_fee_a'] = filter(first_weight_fee_3);
+	staple_ext_3['first_weight_b'] = filter(first_gt_weight_3);
+	staple_ext_3['first_fee_b'] = filter(first_gt_weight_fee_3);
+	staple_ext_3['second_weight_start_a'] = filter(second_weight_start_3);
+	staple_ext_3['second_weight_end'] = filter(second_weight_end_3);
+	staple_ext_3['second_fee_a'] = filter(second_weight_fee_3);
+	staple_ext_3['second_weight_start_b'] = filter(second_lt_weight_3);
+	staple_ext_3['second_fee_b'] = filter(second_lt_fee_3);
+
+	var  staple_ext_4 = {};
+	staple_ext_4['id'] = $("#siq").val();
+	staple_ext_4['zone_id'] = 4;
+	staple_ext_4['zone_name'] = "四区";
+	staple_ext_4['first_weight_a'] = filter(first_weight);
+	staple_ext_4['first_fee_a'] = filter(first_weight_fee_4);
+	staple_ext_4['first_weight_b'] = filter(first_gt_weight_4);
+	staple_ext_4['first_fee_b'] = filter(first_gt_weight_fee_4);
+	staple_ext_4['second_weight_start_a'] = filter(second_weight_start_4);
+	staple_ext_4['second_weight_end'] = filter(second_weight_end_4);
+	staple_ext_4['second_fee_a'] = filter(second_weight_fee_4);
+	staple_ext_4['second_weight_start_b'] = filter(second_lt_weight_4);
+	staple_ext_4['second_fee_b'] = filter(second_lt_fee_4);
+
+	var  staple_ext_5 = {};
+	staple_ext_5['id'] = $("#wq").val();
+	staple_ext_5['zone_id'] = 5;
+	staple_ext_5['zone_name'] = "五区";
+	staple_ext_5['first_weight_a'] = filter(first_weight);
+	staple_ext_5['first_fee_a'] = filter(first_weight_fee_5);
+	staple_ext_5['first_weight_b'] = filter(first_gt_weight_5);
+	staple_ext_5['first_fee_b'] = filter(first_gt_weight_fee_5);
+	staple_ext_5['second_weight_start_a'] = filter(second_weight_start_5);
+	staple_ext_5['second_weight_end'] = filter(second_weight_end_5);
+	staple_ext_5['second_fee_a'] = filter(second_weight_fee_5);
+	staple_ext_5['second_weight_start_b'] = filter(second_lt_weight_5);
+	staple_ext_5['second_fee_b'] = filter(second_lt_fee_5);
+
+
+
+	staple_arr = JSON.stringify(staple_arr);
+	staple_ext_1 = JSON.stringify(staple_ext_1);
+	staple_ext_2 = JSON.stringify(staple_ext_2);
+	staple_ext_3 = JSON.stringify(staple_ext_3);
+	staple_ext_4 = JSON.stringify(staple_ext_4);
+	staple_ext_5 = JSON.stringify(staple_ext_5);
+	$.ajax({
+		type:'post',
+		traditional :true,
+		url:"index.php?s=/Shipping/edit_save_rule",
+		data:{staple_arr :staple_arr ,staple_ext_1:staple_ext_1,staple_ext_2:staple_ext_2,
+			staple_ext_3:staple_ext_3,staple_ext_4:staple_ext_4,staple_ext_5:staple_ext_5},
+		success:function(data){
+			if(data == 1){
+				alert("添加成功");
+			}else if(data == 2){
+				alert("同一分仓不能重复添加规则！");
+			}else{
+				alert("发生未知错误");
+			}
+		}
+	});
+}
+function filter(params){
+	params = typeof(params) == 'undefined' ? 0 : params;
+	return params;
+}
+
+
+
+function show_second(obj){
+	var a = $(obj).data("id");
+	var i = $(obj).next("div").data("node");
+
+	var str = '<input type="text" class="text input-small" name="second_lt_weight_'+i+'" style="width: 30px" > (KG) 资费'
+			+'<input type="text" class="text input-small" name="second_lt_fee_'+i+'" > (元)';
+	if(a == 1){
+		$(obj).next("div").html(str);
+		$(obj).html("-");
+		$(obj).data("id",2);
+	}else{
+		$(obj).next("div").html('');
+		$(obj).html("+");
+		$(obj).data("id",1);
+	}
+}
+
+function show_first(obj){
+	var a = $(obj).data("id");
+	var i = $(obj).next("div").data("node");
+	var str = ' 小于<input type="text" class="text input-small" name="first_gt_weight_'+i+'" style="width: 50px" >(KG)'
+			+'<input type="text" style="width: 50px" class="text input-small" name="first_gt_weight_fee_'+i+'" > (元)';
+
+	if(a == 1){
+		$(obj).html("-");
+		$(obj).next("div").html(str);
+		$(obj).data("id",2);
+	}else{
+		$(obj).html("+");
+		$(obj).next("div").html('');
+		$(obj).data("id",1);
+	}
+
+}
+Think.setValue("pid", {$info.pid|default = 0});
+Think.setValue("hide", {$info.hide|default = 0});
+Think.setValue("is_dev", {$info.is_dev|default = 0});
+//导航高亮
+highlight_subnav('{:U('index')}');
+</script>
+</block>

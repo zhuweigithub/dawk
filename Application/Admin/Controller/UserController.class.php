@@ -270,7 +270,7 @@ class UserController extends AdminController {
             $email = I("post.email");
 
             if($department==""){
-                $this->error('请选择或输入部门名称！');
+                $this->error('请选择团队！');
             }
             /* 检测密码 */
             if($password != $repassword){

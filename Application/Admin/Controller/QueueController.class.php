@@ -6,6 +6,7 @@ use Think\Exception;
 class QueueController extends AdminController
 {
     public function __construct(){
+		\Think\Log::record(time() . '===Queue->runQueue--------zwzwzw');exit;
         $this->runQueue();
     }
 	public function runQueue()

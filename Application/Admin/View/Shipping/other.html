@@ -58,6 +58,7 @@
                         </td>
                         <td class="action">
                             <a  onclick="delRule('{$data.id}')">删除</a>
+                            <a  onclick="editRule('{$data.store_id}','{$data.store_name}')">编辑</a>
                         </td>
                     </tr>
                 </volist>
@@ -84,7 +85,8 @@
         }
         function delRule(id){
             if(confirm("您确定要删除这条记录吗？")){
-                $.post("index.php?s=/ReadWriteData/delRule",{id:id},function(data){
+
+                $.post("index.php?s=/Shipping/delRule",{id:id},function(data){
                     if(data == 1){
                         $(".show-input_"+id).remove();
                     }else{
@@ -150,6 +152,10 @@
             });
 
         }
+
+		function editRule(id ,store_name){
+			window.location.href= "/index.php?s=/Shipping/editOther/sub_id/"+ id +"/sub_name/"+ store_name +".html"
+		}
         //导航高亮
         highlight_subnav('{:U('AuthManager / index')}');
     </script>
