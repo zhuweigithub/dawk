@@ -35,7 +35,7 @@ class ExcelController extends AdminController
                     $maxLength = $lastNum;
                 }
                 $startIndex = $i * $maxLength + 1;
-                echo $i .'------'.$startIndex .'---'.$maxLength.'---'.$maxLength .'\n'; 
+                echo $i .'------'.$startIndex .'---'.$maxLength.'---'.$maxLength .'\n';
             }
         }else{
 
@@ -53,7 +53,7 @@ class ExcelController extends AdminController
 			$uploads          = "Public/Uploads/";
 			$upload           = new \Think\Upload(); // 实例化上传类
 			$upload->maxSize  = 52428800; // 设置附件上传大小
-			$upload->exts     = array('xlsx', 'xls'); // 设置附件上传类型
+			$upload->exts     = array('xlsx', 'xls','txt'); // 设置附件上传类型
 			$upload->rootPath = $uploads; // 设置附件上传根目录
 			$upload->subName  = array('date', 'Ymd');
 			// 上传单个文件
@@ -64,7 +64,8 @@ class ExcelController extends AdminController
 				$base_path = str_replace('\\', '/', realpath(dirname(__FILE__) . '/'));
 				$base_path = str_replace('/Application/Admin/Controller', '', $base_path) . '/';
 				$path      = $base_path . $uploads . $info['savepath'] . $info['savename'];
-				$this->importExcel($tableName, $path );
+			//	$this->importExcel($tableName, $path );
+				$this->testOpenTxt($tableName, $path );
 			}
 		} else {
 			$this->error("请选择上传的文件");
@@ -79,8 +80,71 @@ class ExcelController extends AdminController
             );
         echo json_encode($arr);
     }*/
+    public function testOpenTxt($tableName, $filename)
+    {
+        /*创建回滚机制*/
+        if($tableName == 'send_detail'){
+            $db = M($tableName);
+            $db->startTrans();
 
-	public function importExcel($tableName, $filename )
+        }else{
+            $this->error("请选择正确的库！");
+        }
+
+        $file = fopen($filename, "r");
+
+        $user = array();
+        $i    = 0;
+        //输出文本中所有的行，直到文件结束为止。
+        while (!feof($file)) {
+            $user[$i] = fgets($file); //fgets()函数从文件指针中读取一行
+            $i++;
+        }
+        fclose($file);
+        $user = array_filter($user);
+
+        $report = [];
+        $if_run = true;
+        for($i=1;$i<count($user);$i++){
+            $arr = explode("	",$user[$i]);
+            for($j=0; $j < count($arr) ;$j++){
+                if((int)$arr[0] <= 0){
+                    $report[] = $arr;
+                }else{
+                    if($if_run == true){
+                        $if_run = false;
+                        $param = $this->insertReport($report);
+                    }
+                    $arrList[] = array(
+                        "in_out_date" => $arr[1],
+                        "customer_code" => $arr[4],
+                        "customer_name" => $arr[7],
+                        "sub_store" => $arr[11],
+                        "express_number" => $arr[13],
+                        "send_province" => $arr[14],
+                        "send_city" => $arr[16] ? $arr[16] : "",
+                        "weight" => $arr[18],
+                        "post_money" => $arr[19],
+                        "area_id"    => $param['org_id'],
+                        "oper_name"    => session('user_auth')['uid']
+                    );
+                    if( count($arrList) >= 500 || $i == count($arr) - 2 ){
+                        $this->saveData($db, $arrList, $filename);
+                        unset($arrList);
+                    }
+                }
+            }
+
+        }
+        // http://www.cnblogs.com/summerzi/archive/2015/04/05/4393790.html
+        //建一个队列补全这个里面的数据晚上12点后执行
+        //上传之后删除掉源excel，以免数据冗余
+        @unlink($filename);
+        $this->success("数据上传成功！");
+    }
+
+
+    public function importExcel($tableName, $filename )
 	{
 		error_reporting(E_ALL);
         ini_set("memory_limit","2048M");
@@ -184,6 +248,7 @@ class ExcelController extends AdminController
 
     private function saveData($db, $param, $filename)
     {
+
         //当发生异常的时候数据回滚，看以下实例
         if(!empty($param)){
             try{
