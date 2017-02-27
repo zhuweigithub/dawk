@@ -35,7 +35,7 @@ class ExcelController extends AdminController
                     $maxLength = $lastNum;
                 }
                 $startIndex = $i * $maxLength + 1;
-                echo $i .'------'.$startIndex .'---'.$maxLength.'---'.$maxLength .'\n';
+                echo $i .'------'.$startIndex .'---'.$maxLength.'---'.$maxLength .'\n'; 
             }
         }else{
 
