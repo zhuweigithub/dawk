@@ -2,11 +2,12 @@
 namespace Admin\Controller;
 
 use Think\Exception;
+use Think\Controller;
 
-class QueueController extends AdminController
+class QueueController extends Controller
 {
     public function __construct(){
-		\Think\Log::record(time() . '===Queue->runQueue--------zwzwzw');exit;
+		\Think\Log::record(time() . '===Queue->runQueue--------start run');
         $this->runQueue();
     }
 	public function runQueue()
