@@ -57,7 +57,7 @@ class ExcelController extends AdminController
 			$uploads          = "Public/Uploads/";
 			$upload           = new \Think\Upload(); // 实例化上传类
 			$upload->maxSize  = 52428800; // 设置附件上传大小
-			$upload->exts     = array('xlsx', 'xls','txt'); // 设置附件上传类型
+			$upload->exts     = array('xlsx', 'xls', 'txt'); // 设置附件上传类型
 			$upload->rootPath = $uploads; // 设置附件上传根目录
 			$upload->subName  = array('date', 'Ymd');
 			// 上传单个文件
@@ -68,85 +68,87 @@ class ExcelController extends AdminController
 				$base_path = str_replace('\\', '/', realpath(dirname(__FILE__) . '/'));
 				$base_path = str_replace('/Application/Admin/Controller', '', $base_path) . '/';
 				$path      = $base_path . $uploads . $info['savepath'] . $info['savename'];
-			//	$this->importExcel($tableName, $path );
-				$this->testOpenTxt($tableName, $path );
+				//	$this->importExcel($tableName, $path );
+				$this->testOpenTxt($tableName, $path);
 			}
 		} else {
 			$this->error("请选择上传的文件");
 		}
-    }
-/*    public $count = 0;
-    public $runRow = 0;
-    public function ajaxPlan(){
-            $arr = array(
-                "count" => $this->count,
-                "run_row" => $this->runRow
-            );
-        echo json_encode($arr);
-    }*/
-    public function testOpenTxt($tableName, $filename)
-    {
-        /*创建回滚机制*/
-        if($tableName == 'send_detail'){
-            $db = M($tableName);
-            $db->startTrans();
+	}
 
-        }else{
-            $this->error("请选择正确的库！");
-        }
+	/*    public $count = 0;
+		public $runRow = 0;
+		public function ajaxPlan(){
+				$arr = array(
+					"count" => $this->count,
+					"run_row" => $this->runRow
+				);
+			echo json_encode($arr);
+		}*/
+	public function testOpenTxt($tableName, $filename)
+	{
+		/*创建回滚机制*/
+		if ($tableName == 'send_detail') {
+			$db = M($tableName);
+			$db->startTrans();
 
-        $file = fopen($filename, "r");
+		} else {
+			$this->error("请选择正确的库！");
+		}
 
-        $user = array();
-        $i    = 0;
-        //输出文本中所有的行，直到文件结束为止。
-        while (!feof($file)) {
-            $user[$i] = fgets($file); //fgets()函数从文件指针中读取一行
-            $i++;
-        }
-        fclose($file);
-        $user = array_filter($user);
+		$file = fopen($filename, "r");
 
-        $report = [];
-        $if_run = true;
-        for($i=1;$i<count($user);$i++){
-            $arr = explode("	",$user[$i]);
-            for($j=0; $j < count($arr) ;$j++){
-                if((int)$arr[0] <= 0){
-                    $report[] = $arr;
-                }else{
-                    if($if_run == true){
-                        $if_run = false;
-                        $param = $this->insertReport($report);
-                    }
-                    $arrList[] = array(
-                        "in_out_date" => $arr[1],
-                        "customer_code" => $arr[4],
-                        "customer_name" => $arr[7],
-                        "sub_store" => $arr[11],
-                        "express_number" => $arr[13],
-                        "send_province" => $arr[14],
-                        "send_city" => $arr[16] ? $arr[16] : "",
-                        "weight" => $arr[18],
-                        "post_money" => $arr[19],
-                        "area_id"    => $param['org_id'],
-                        "oper_name"    => session('user_auth')['uid']
-                    );
-                    if( count($arrList) >= 500 || $i == count($arr) - 2 ){
-                        $this->saveData($db, $arrList, $filename);
-                        unset($arrList);
-                    }
-                }
-            }
+		$user = array();
+		$i    = 0;
+		//输出文本中所有的行，直到文件结束为止。
+		while (!feof($file)) {
+			$user[$i] = fgets($file); //fgets()函数从文件指针中读取一行
+			$i++;
+		}
+		fclose($file);
+		$user = array_filter($user);
 
-        }
-        // http://www.cnblogs.com/summerzi/archive/2015/04/05/4393790.html
-        //建一个队列补全这个里面的数据晚上12点后执行
-        //上传之后删除掉源excel，以免数据冗余
-        @unlink($filename);
-        $this->success("数据上传成功！");
-    }
+		$report    = [];
+		$arrList[] = [];
+		$if_run    = true;
+	//	print_r($user);
+		//echo "---------";
+		for ($i = 0; $i < count($user); $i++) {
+			$arr = explode("	", $user[$i]);
+			if ((int)$arr[0] <= 0) {
+				$report[] = $arr;
+			} else {
+				if ($if_run == true) {
+					$if_run = false;
+					$param  = $this->insertReport($report);
+				}
+				$arrList[] = array(
+					"in_out_date"    => str_replace(" ","",$arr[1]),
+					"customer_code"  => $arr[4],
+					"customer_name"  => $arr[7],
+					"sub_store"      => $arr[11],
+					"express_number" => $arr[13],
+					"send_province"  => $arr[14],
+					"send_city"      => $arr[16] ? $arr[16] : "",
+					"weight"         => $arr[18],
+					"post_money"     => $arr[19],
+					"area_id"        => $param['org_id'],
+					"oper_name"      => session('user_auth')['uid']
+				);
 
+			}
+			if (count($arrList) >= 500 || $i == count($user) - 3) {
+				print_r($arrList);
+				//$this->saveData($db, $arrList, $filename);
+				unset($arrList);
+			}
+		}
+		// http://www.cnblogs.com/summerzi/archive/2015/04/05/4393790.html
+		//建一个队列补全这个里面的数据晚上12点后执行
+		//上传之后删除掉源excel，以免数据冗余
+		@unlink($filename);
+		$this->success("数据上传成功！");
+	}
 
 
 	public function importExcel($tableName, $filename)
@@ -221,69 +223,72 @@ class ExcelController extends AdminController
 	}
 
 
+	private function saveData($db, $param, $filename)
+	{
+		//当发生异常的时候数据回滚，看以下实例
+		if (!empty($param)) {
+			try {
+				$result = $db->addAll($param);
+				$db->commit();
+			} catch (Exception  $e) {
+				$db->rollback();
+				@unlink($filename);
+				$this->error("发生未知错误,数据回滚,详情：" . $e, '', 5);
+			}
+		}
+	}
 
-    private function saveData($db, $param, $filename)
-    {
+	private function isAdmin()
+	{
+		return intval(session('user_auth')['uid']) === C('USER_ADMINISTRATOR');
+	}
 
-        //当发生异常的时候数据回滚，看以下实例
-        if(!empty($param)){
-            try{
-                $result = $db->addAll($param);
-                $db->commit();
-            }catch (Exception  $e){
-                $db->rollback();
-                @unlink($filename);
-                $this->error("发生未知错误,数据回滚,详情：".$e ,'',5);
-            }
-        }
-    }
-    private function isAdmin(){
-        return intval(session('user_auth')['uid']) === C('USER_ADMINISTRATOR');
-    }
-    public function getSendList($month,$type,$customer_name){
-        $param['month'] = $month;
+	public function getSendList($month, $type, $customer_name)
+	{
+		$param['month'] = $month;
 
-        if( $type == 2 ){
-            $tableName = "send_count_customer";
-            $param['customer_name'] = array('like',"%".$customer_name."%");
-        }else{
-            $tableName = "Send_count_date_customer";
-            if(!$this->isAdmin()){
-                $result = M("Member")->field("area")->where("uid = " .session('user_auth')['uid'])->find();
-                $param['area_id'] = $result['area'];
-            }
-            if($customer_name){
-                $param['sub_store'] = array('like',"%".$customer_name."%");
-            }
+		if ($type == 2) {
+			$tableName              = "send_count_customer";
+			$param['customer_name'] = array('like', "%" . $customer_name . "%");
+		} else {
+			$tableName = "Send_count_date_customer";
+			if (!$this->isAdmin()) {
+				$result           = M("Member")->field("area")->where("uid = " . session('user_auth')['uid'])->find();
+				$param['area_id'] = $result['area'];
+			}
+			if ($customer_name) {
+				$param['sub_store'] = array('like', "%" . $customer_name . "%");
+			}
 
-        }
-        $result = M($tableName)->where($param)->select();
-        $num_count = 0;
-        $post_money_count = 0;
-        $balancing_count = 0;
-        $gap_money_count = 0;
-        foreach($result as $key=>$val){
-            $num_count += $val['num'];
-            $post_money_count += $val['post_money'];
-            $balancing_count += $val['balancing'];
-            $gap_money_count += $val['gap_money'];
-        }
-        $result[count($result)] = array(
-        "month" => $month,
-        "num" => $num_count,
-        "post_money" => $post_money_count,
-        "balancing" => $balancing_count,
-        "gap_money" => $gap_money_count
-        );
-        if(type == 1){
-            $result[count($result)-1]['in_out_date'] = "合计";
-        }else{
-            $result[count($result)-1]['customer_name'] = "合计";
-        }
+		}
+		$result           = M($tableName)->where($param)->select();
+		$num_count        = 0;
+		$post_money_count = 0;
+		$balancing_count  = 0;
+		$gap_money_count  = 0;
+		foreach ($result as $key => $val) {
+			$num_count += $val['num'];
+			$post_money_count += $val['post_money'];
+			$balancing_count += $val['balancing'];
+			$gap_money_count += $val['gap_money'];
+		}
+		$result[count($result)] = array(
+			"month"      => $month,
+			"num"        => $num_count,
+			"post_money" => $post_money_count,
+			"balancing"  => $balancing_count,
+			"gap_money"  => $gap_money_count
+		);
+		if (type == 1) {
+			$result[count($result) - 1]['in_out_date'] = "合计";
+		} else {
+			$result[count($result) - 1]['customer_name'] = "合计";
+		}
 
-        //dump($result);exit;
-        return $result;
-    }
+		//dump($result);exit;
+		return $result;
+	}
+
 	private function insertReport($report)
 	{
 		$reportDb = M("Report");
@@ -291,16 +296,16 @@ class ExcelController extends AdminController
 		$params['report_title'] = $report[0][0];
 		$params['report_time']  = $report[1][0];
 		$params['report_org']   = $report[2][0];
-		$regex                   = "'\d{4}-\d{1,2}-\d{1,2}'is";
+		$regex                  = "'\d{4}-\d{1,2}-\d{1,2}'is";
 		preg_match_all($regex, $params['report_time'], $matches);
 		//dump($matches);
 		$params['start_time'] = $matches[0][0];
 		$params['end_time']   = $matches[0][1];
 
-		$arr                    = explode("揽收机构：", $params['report_org']);
+		$arr                   = explode("揽收机构：", $params['report_org']);
 		$params['org_name']    = $arr[1];
 		$param['in_out_org']   = $params['org_name'];
-		$org_id                 = M("In_out_org")->field("id")->where($param)->find();
+		$org_id                = M("In_out_org")->field("id")->where($param)->find();
 		$params['org_id']      = $org_id['id'];
 		$params['user_id']     = session('user_auth')['uid'];
 		$params['create_time'] = date("Y-m-d H:i:s", time());
