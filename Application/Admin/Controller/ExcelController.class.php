@@ -109,22 +109,18 @@ class ExcelController extends AdminController
 		$user = array_filter($user);
 
 		$report    = [];
-		$arrList[] = [];
 		$if_run    = true;
-		print_r($user);
-		echo "---------";
 		for ($i = 0; $i < count($user); $i++) {
 			$arr = explode("	", $user[$i]);
             for($j =0 ;$j<count($arr);$j++){
                 $arr[$j] = str_replace("    ","",$arr[$j]);
             }
+
 			if ((int)$arr[0] <= 0) {
 				$report[] = $arr;
 			} else {
 				if ($if_run == true) {
 					$if_run = false;
-                    print_r($report);
-                    echo "---------";
 					$param  = $this->insertReport($report);
 				}
 				$arrList[] = array(
@@ -142,11 +138,8 @@ class ExcelController extends AdminController
 					"create_time"      => date("Y-m-d H:i:s", time()),
 					"update_time"      => date("Y-m-d H:i:s", time())
 				);
-
 			}
-            unset($arrList[0]);
             if (count($arrList) >= 500 || $i == count($user) - 3) {
-                print_r($arrList);
                 $this->saveData($db, $arrList, $filename);
                 unset($arrList);
             }
@@ -154,8 +147,8 @@ class ExcelController extends AdminController
 		// http://www.cnblogs.com/summerzi/archive/2015/04/05/4393790.html
 		//建一个队列补全这个里面的数据晚上12点后执行
 		//上传之后删除掉源excel，以免数据冗余
-	/*	@unlink($filename);
-		$this->success("数据上传成功！");*/
+		@unlink($filename);
+		$this->success("数据上传成功！");
 	}
 
 
