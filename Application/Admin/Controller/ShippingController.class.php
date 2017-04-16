@@ -30,6 +30,47 @@ class ShippingController extends AdminController
         $this->assign('_list', $list);
         $this->display();
     }
+    public function addZone(){
+        $sub_id = $_GET['sub_id'];
+        $sub_name = $_GET["sub_name"];
+        if(empty($sub_id) || empty($sub_name)){
+            $this->error("分仓不能为空！");
+        }
+        $Model  = M();
+        $sql    = "select a.id ,a.zone_name,a.short_name,a.name,b.first_charge,b.second_charge,b.three_charge,b.first_charge_s,b.three_charge_s,
+                    c.first_weight,c.second_weight,c.three_weight,c.first_weight_s,c.three_weight_s
+                    from t_province as a left join t_charge as b on a.id= b.province_id left join t_province_attr as c  on a.id = c.province_id";
+        $list = $Model->query($sql);
+        $this->assign('_list', $list);
+        $this->assign("sub_id",$sub_id);
+        $this->assign("sub_name",$sub_name);
+        $this->display();
+    }
+
+    public function getProvinceList(){
+        $result = M("Province")->select();
+        echo json_encode($result);
+    }
+    public function getZoneList(){
+        $param['store_id'] = $_POST['store_id'];
+        if(empty($param['store_id'])){
+            echo 2;//表示store_id不能为空
+        }
+        $param['status'] = 0;
+        $result = M("Zone")->where($param)->select();
+        if(count($result) > 0){
+            for($i=0 ; $i < count($result) ; $i++){
+                $provinceIds = str_split(',',$result[$i]['province_ids']);
+             for($j=0 ; $j < count($provinceIds)-1;$j++){
+                 $params['id'] = $provinceIds[$j];
+                 $data = M("Province")->field("id,name,zone_name,zone_id")->where($params)->select();
+             }
+                $result['province_list'] = $data;
+            }
+        }
+        echo json_encode($result);
+    }
+
     public function addOther(){
         $sub_id = $_GET['sub_id'];
         $sub_name = $_GET["sub_name"];

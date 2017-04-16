@@ -1,0 +1,367 @@
+<extend name="Public/base"/>
+
+<block name="body">
+
+    <div style="padding-left:10px;width:30%;float:right;border:1px solid rgba(255, 251, 129, 0.49);border: 1px dotted #1115ff;height: 500px;background: #fffc59;margin-right:5%;margin-top: 1rem  ">
+        <div style="margin-top:0.5rem;width: 100%;height: 3.5rem;">
+            <span style="font-size: 16px;font-weight: bold;margin-top: 1rem;display: inline-block">一区：</span><br/>
+            <volist name="result" id="data">
+                <if condition="$data['zone_id'] eq 1 ">
+                    <span style="margin-left: 2rem">{$data.name}</span>
+                </if>
+            </volist>
+            <br/> <span style="font-size: 16px;font-weight: bold;margin-top: 1rem;display: inline-block">二区：</span><br/>
+            <volist name="result" id="data">
+                <if condition="$data['zone_id'] eq 2 ">
+                    <span style="margin-left: 2rem">{$data.name}</span>
+                </if>
+            </volist>
+            <br/> <span style="font-size: 16px;font-weight: bold;margin-top: 1rem;display: inline-block">三区：</span><br/>
+            <volist name="result" id="data">
+                <if condition="$data['zone_id'] eq 3 ">
+                    <span style="margin-left: 1.5rem">{$data.name}</span>
+                </if>
+            </volist>
+            <br/> <span style="font-size: 16px;font-weight: bold;margin-top: 1rem;display: inline-block">四区：</span><br/>
+            <volist name="result" id="data">
+                <if condition="$data['zone_id'] eq 4 ">
+                    <span style="margin-left: 2rem">{$data.name}</span>
+                </if>
+            </volist>
+            <br/> <span style="font-size: 16px;font-weight: bold;margin-top: 1rem;display: inline-block">五区：</span><br/>
+            <volist name="result" id="data">
+                <if condition="$data['zone_id'] eq 5 ">
+                    <span style="margin-left: 2rem">{$data.name}</span>
+                </if>
+            </volist>
+            <!--<br/> <span style="font-size: 16px;font-weight: bold;margin-top: 1rem;display: inline-block">六区：</span><br/>
+            <volist name="result" id="data">
+                <if condition="$data['zone_id'] eq 6 ">
+                    <span style="margin-left: 2rem">{$data.name}</span>
+                </if>
+            </volist>
+            <br/> <span style="font-size: 16px;font-weight: bold;margin-top: 1rem;display: inline-block">七区：</span><br/>
+            <volist name="result" id="data">
+                <if condition="$data['zone_id'] eq 7 ">
+                    <span style="margin-left: 2rem">{$data.name}</span>
+                </if>
+            </volist>-->
+
+
+        </div>
+    </div>
+    <div class="data-table table-striped" id ="zone_button" style="width: 15%;float:right;border: 1px solid red;margin-right:5%;height: 500px;padding-top: 100px">
+
+    </div>
+    <div class="data-table table-striped" style="width: 35%">
+        <div class="form-horizontal">
+            <div class="form-item">
+                <label class="item-label">分仓名：<span id="sub_store" data-id="{$sub_id}" data-name="{$sub_name}">
+                    {$sub_name|default=''}</span></label>
+            </div>
+            <div class="form-item" id="province_list">
+
+            </div>
+
+
+            <div class="form-item">
+                <button class="btn submit-btn" id="submit" onclick="submit_ajax()">确 定</button>
+                <button class="btn btn-return" onclick="javascript:history.back(-1);return false;">返 回</button>
+            </div>
+        </div>
+    </div>
+</block>
+
+<block name="script">
+<script type="text/javascript">
+
+$(function(){
+    Account.init();
+});
+var Account = {};
+
+Account.init = function(){
+    Account.get_province_list();
+}
+Account.get_province_list = function(){
+    var store_id = $("#sub_store").data("id");
+    $.ajax({
+        url :"index.php?s=/Shipping/getProvinceList",
+        type:"post",
+        data:{store_id:store_id},
+        traditional :true,
+        success:function(data){
+            data=eval("("+data+")");
+            var str = "";
+            for(var i=0; i < data.length; i++){
+                str +=' <input type="checkbox" name="province_id" data-id="'+data[i].id+'"/> '+data[i].name+' <br/>';
+            }
+            $("#province_list").html('');
+            $("#province_list").html(str);
+    }
+
+    });
+}
+Account.get_zone_list = function(){
+    var store_id = $("#sub_store").data("id");
+    $.ajax({
+        url :"index.php?s=/Shipping/getZoneList",
+        type:"post",
+        data:{store_id:store_id},
+        traditional :true,
+        success:function(data){
+            data=eval("("+data+")");
+            var str = "";
+            for(var i=0; i < data.length; i++){
+                str +=' <input type="checkbox" name="province_id" data-id="'+data[i].id+'"/> '+data[i].name+' <br/>';
+            }
+            $("#province_list").html('');
+            $("#province_list").html(str);
+        }
+
+    });
+}
+
+function submit_ajax(){
+    var first_weight = $("input[name=first_weight]").val();
+    var first_weight_fee_1 = $("input[name=first_weight_fee_1]").val();
+    var first_weight_fee_2 = $("input[name=first_weight_fee_2]").val();
+    var first_weight_fee_3 = $("input[name=first_weight_fee_3]").val();
+    var first_weight_fee_4 = $("input[name=first_weight_fee_4]").val();
+    var first_weight_fee_5 = $("input[name=first_weight_fee_5]").val();
+    /*   var first_weight_fee_6 = $("input[name=first_weight_fee_6]").val();
+     var first_weight_fee_7 = $("input[name=first_weight_fee_7]").val();*/
+    if(first_weight == "" || first_weight_fee_1 =="" || first_weight_fee_2 == "" || first_weight_fee_3 == "" || first_weight_fee_4 == "" || first_weight_fee_5 == ""){
+        alert("首重分区资费不能为空！");return;
+    }
+
+    var first_gt_weight_1 = $("input[name=first_gt_weight_1]").val();
+    var first_gt_weight_fee_1 = $("input[name=first_gt_weight_fee_1]").val();
+    var first_gt_weight_2 = $("input[name=first_gt_weight_2]").val();
+    var first_gt_weight_fee_2 = $("input[name=first_gt_weight_fee_2]").val();
+    var first_gt_weight_3 = $("input[name=first_gt_weight_3]").val();
+    var first_gt_weight_fee_3 = $("input[name=first_gt_weight_fee_3]").val();
+    var first_gt_weight_4 = $("input[name=first_gt_weight_4]").val();
+    var first_gt_weight_fee_4 = $("input[name=first_gt_weight_fee_4]").val();
+    var first_gt_weight_5 = $("input[name=first_gt_weight_5]").val();
+    var first_gt_weight_fee_5 = $("input[name=first_gt_weight_fee_5]").val();
+    /* var first_gt_weight_6 = $("input[name=first_gt_weight_6]").val();
+     var first_gt_weight_fee_6 = $("input[name=first_gt_weight_fee_6]").val();
+     var first_gt_weight_7 = $("input[name=first_gt_weight_7]").val();
+     var first_gt_weight_fee_7 = $("input[name=first_gt_weight_fee_7]").val();*/
+
+
+
+    var second_weight_start_1 = $("input[name=second_weight_start_1]").val();
+    var second_weight_end_1 = $("input[name=second_weight_end_1]").val();
+    var second_weight_fee_1 = $("input[name=second_weight_fee_1]").val();
+    var second_weight_start_2 = $("input[name=second_weight_start_2]").val();
+    var second_weight_end_2 = $("input[name=second_weight_end_2]").val();
+    var second_weight_fee_2 = $("input[name=second_weight_fee_2]").val();
+    var second_weight_start_3 = $("input[name=second_weight_start_3]").val();
+    var second_weight_end_3 = $("input[name=second_weight_end_3]").val();
+    var second_weight_fee_3 = $("input[name=second_weight_fee_3]").val();
+    var second_weight_start_4 = $("input[name=second_weight_start_4]").val();
+    var second_weight_end_4 = $("input[name=second_weight_end_4]").val();
+    var second_weight_fee_4 = $("input[name=second_weight_fee_4]").val();
+    var second_weight_start_5 = $("input[name=second_weight_start_5]").val();
+    var second_weight_end_5 = $("input[name=second_weight_end_5]").val();
+    var second_weight_fee_5 = $("input[name=second_weight_fee_5]").val();
+    /*var second_weight_start_6 = $("input[name=second_weight_start_6]").val();
+     var second_weight_end_6 = $("input[name=second_weight_end_6]").val();
+     var second_weight_fee_6 = $("input[name=second_weight_fee_6]").val();
+     var second_weight_start_7 = $("input[name=second_weight_start_7]").val();
+     var second_weight_end_7 = $("input[name=second_weight_end_7]").val();
+     var second_weight_fee_7 = $("input[name=second_weight_fee_7]").val();*/
+
+    if(second_weight_start_1 == "" || second_weight_fee_1 =="" || second_weight_start_2 == "" || second_weight_fee_2 =="" ||
+            second_weight_start_3 == "" || second_weight_fee_3 =="" || second_weight_start_4 == "" || second_weight_fee_4 =="" ||
+            second_weight_start_5 == "" || second_weight_fee_5 ==""){
+        alert("续重分区资费不能为空！");return;
+    }
+
+    var second_lt_weight_1 = $("input[name=second_lt_weight_1]").val();
+    var second_lt_fee_1 = $("input[name=second_lt_fee_1]").val();
+    var second_lt_weight_2 = $("input[name=second_lt_weight_2]").val();
+    var second_lt_fee_2 = $("input[name=second_lt_fee_2]").val();
+    var second_lt_weight_3 = $("input[name=second_lt_weight_3]").val();
+    var second_lt_fee_3 = $("input[name=second_lt_fee_3]").val();
+    var second_lt_weight_4 = $("input[name=second_lt_weight_4]").val();
+    var second_lt_fee_4 = $("input[name=second_lt_fee_4]").val();
+    var second_lt_weight_5 = $("input[name=second_lt_weight_5]").val();
+    var second_lt_fee_5 = $("input[name=second_lt_fee_5]").val();
+    /*  var second_lt_weight_6 = $("input[name=second_lt_weight_6]").val();
+     var second_lt_fee_6 = $("input[name=second_lt_fee_6]").val();
+     var second_lt_weight_7 = $("input[name=second_lt_weight_7]").val();
+     var second_lt_fee_7 = $("input[name=second_lt_fee_7]").val();*/
+    var  staple_arr = {};
+    staple_arr['store_id'] = $('#sub_store').data('id');
+    staple_arr['store_name'] = $('#sub_store').html();
+    staple_arr['first_weight'] = first_weight;
+    var  staple_ext_1 = {};
+    staple_ext_1['zone_id'] = 1;
+    staple_ext_1['zone_name'] = "一区";
+    staple_ext_1['first_weight_a'] = filter(first_weight);
+    staple_ext_1['first_fee_a'] = filter(first_weight_fee_1);
+    staple_ext_1['first_weight_b'] = filter(first_gt_weight_1);
+    staple_ext_1['first_fee_b'] = filter(first_gt_weight_fee_1);
+    staple_ext_1['second_weight_start_a'] = filter(second_weight_start_1);
+    staple_ext_1['second_weight_end'] = filter(second_weight_end_1);
+    staple_ext_1['second_fee_a'] = filter(second_weight_fee_1);
+    staple_ext_1['second_weight_start_b'] = filter(second_lt_weight_1);
+    staple_ext_1['second_fee_b'] = filter(second_lt_fee_1);
+
+    var  staple_ext_2 = {};
+    staple_ext_2['zone_id'] = 2;
+    staple_ext_2['zone_name'] = "二区";
+    staple_ext_2['first_weight_a'] = filter(first_weight);
+    staple_ext_2['first_fee_a'] = filter(first_weight_fee_2);
+    staple_ext_2['first_weight_b'] = filter(first_gt_weight_2);
+    staple_ext_2['first_fee_b'] = filter(first_gt_weight_fee_2);
+    staple_ext_2['second_weight_start_a'] = filter(second_weight_start_2);
+    staple_ext_2['second_weight_end'] = filter(second_weight_end_2);
+    staple_ext_2['second_fee_a'] = filter(second_weight_fee_2);
+    staple_ext_2['second_weight_start_b'] = filter(second_lt_weight_2);
+    staple_ext_2['second_fee_b'] = filter(second_lt_fee_2);
+
+    var  staple_ext_3 = {};
+    staple_ext_3['zone_id'] = 3;
+    staple_ext_3['zone_name'] = "三区";
+    staple_ext_3['first_weight_a'] = filter(first_weight);
+    staple_ext_3['first_fee_a'] = filter(first_weight_fee_3);
+    staple_ext_3['first_weight_b'] = filter(first_gt_weight_3);
+    staple_ext_3['first_fee_b'] = filter(first_gt_weight_fee_3);
+    staple_ext_3['second_weight_start_a'] = filter(second_weight_start_3);
+    staple_ext_3['second_weight_end'] = filter(second_weight_end_3);
+    staple_ext_3['second_fee_a'] = filter(second_weight_fee_3);
+    staple_ext_3['second_weight_start_b'] = filter(second_lt_weight_3);
+    staple_ext_3['second_fee_b'] = filter(second_lt_fee_3);
+
+    var  staple_ext_4 = {};
+    staple_ext_4['zone_id'] = 4;
+    staple_ext_4['zone_name'] = "四区";
+    staple_ext_4['first_weight_a'] = filter(first_weight);
+    staple_ext_4['first_fee_a'] = filter(first_weight_fee_4);
+    staple_ext_4['first_weight_b'] = filter(first_gt_weight_4);
+    staple_ext_4['first_fee_b'] = filter(first_gt_weight_fee_4);
+    staple_ext_4['second_weight_start_a'] = filter(second_weight_start_4);
+    staple_ext_4['second_weight_end'] = filter(second_weight_end_4);
+    staple_ext_4['second_fee_a'] = filter(second_weight_fee_4);
+    staple_ext_4['second_weight_start_b'] = filter(second_lt_weight_4);
+    staple_ext_4['second_fee_b'] = filter(second_lt_fee_4);
+
+    var  staple_ext_5 = {};
+    staple_ext_5['zone_id'] = 5;
+    staple_ext_5['zone_name'] = "五区";
+    staple_ext_5['first_weight_a'] = filter(first_weight);
+    staple_ext_5['first_fee_a'] = filter(first_weight_fee_5);
+    staple_ext_5['first_weight_b'] = filter(first_gt_weight_5);
+    staple_ext_5['first_fee_b'] = filter(first_gt_weight_fee_5);
+    staple_ext_5['second_weight_start_a'] = filter(second_weight_start_5);
+    staple_ext_5['second_weight_end'] = filter(second_weight_end_5);
+    staple_ext_5['second_fee_a'] = filter(second_weight_fee_5);
+    staple_ext_5['second_weight_start_b'] = filter(second_lt_weight_5);
+    staple_ext_5['second_fee_b'] = filter(second_lt_fee_5);
+
+
+    /*var  staple_ext_6 = {};
+     staple_ext_6['zone_id'] = 6;
+     staple_ext_6['zone_name'] = "六区";
+     staple_ext_6['first_weight_a'] = filter(first_weight);
+     staple_ext_6['first_fee_a'] = filter(first_weight_fee_6);
+     staple_ext_6['first_weight_b'] = filter(first_gt_weight_6);
+     staple_ext_6['first_fee_b'] = filter(first_gt_weight_fee_6);
+     staple_ext_6['second_weight_start_a'] = filter(second_weight_start_6);
+     staple_ext_6['second_weight_end'] = filter(second_weight_end_6);
+     staple_ext_6['second_fee_a'] = filter(second_weight_fee_6);
+     staple_ext_6['second_weight_start_b'] = filter(second_lt_weight_6);
+     staple_ext_6['second_fee_b'] = filter(second_lt_fee_6);
+
+
+     var  staple_ext_7 = {};
+     staple_ext_7['zone_id'] = 7;
+     staple_ext_7['zone_name'] = "七区";
+     staple_ext_7['first_weight_a'] = filter(first_weight);
+     staple_ext_7['first_fee_a'] = filter(first_weight_fee_7);
+     staple_ext_7['first_weight_b'] = filter(first_gt_weight_7);
+     staple_ext_7['first_fee_b'] = filter(first_gt_weight_fee_7);
+     staple_ext_7['second_weight_start_a'] = filter(second_weight_start_7);
+     staple_ext_7['second_weight_end'] = filter(second_weight_end_7);
+     staple_ext_7['second_fee_a'] = filter(second_weight_fee_7);
+     staple_ext_7['second_weight_start_b'] = filter(second_lt_weight_7);
+     staple_ext_7['second_fee_b'] = filter(second_lt_fee_7);
+     */
+
+    staple_arr = JSON.stringify(staple_arr);
+    staple_ext_1 = JSON.stringify(staple_ext_1);
+    staple_ext_2 = JSON.stringify(staple_ext_2);
+    staple_ext_3 = JSON.stringify(staple_ext_3);
+    staple_ext_4 = JSON.stringify(staple_ext_4);
+    staple_ext_5 = JSON.stringify(staple_ext_5);
+    /*    staple_ext_6 = JSON.stringify(staple_ext_6);
+     staple_ext_7 = JSON.stringify(staple_ext_7);*/
+    $.ajax({
+        type:'post',
+        traditional :true,
+        url:"index.php?s=/Shipping/save_rule",
+        data:{staple_arr :staple_arr ,staple_ext_1:staple_ext_1,staple_ext_2:staple_ext_2,
+            staple_ext_3:staple_ext_3,staple_ext_4:staple_ext_4,staple_ext_5:staple_ext_5},
+        success:function(data){
+            if(data == 1){
+                alert("添加成功");
+            }else if(data == 2){
+                alert("同一分仓不能重复添加规则！");
+            }else{
+                alert("发生未知错误");
+            }
+        }
+    });
+}
+function filter(params){
+    params = typeof(params) == 'undefined' ? 0 : params;
+    return params;
+}
+
+
+
+function show_second(obj){
+    var a = $(obj).data("id");
+    var i = $(obj).next("div").data("node");
+
+    var str = '<input type="text" class="text input-small" name="second_lt_weight_'+i+'" style="width: 30px" > (KG) 资费'
+            +'<input type="text" class="text input-small" name="second_lt_fee_'+i+'" > (元)';
+    if(a == 1){
+        $(obj).next("div").html(str);
+        $(obj).html("-");
+        $(obj).data("id",2);
+    }else{
+        $(obj).next("div").html('');
+        $(obj).html("+");
+        $(obj).data("id",1);
+    }
+}
+
+function show_first(obj){
+    var a = $(obj).data("id");
+    var i = $(obj).next("div").data("node");
+    var str = ' 小于<input type="text" class="text input-small" name="first_gt_weight_'+i+'" style="width: 50px" >(KG)'
+            +'<input type="text" style="width: 50px" class="text input-small" name="first_gt_weight_fee_'+i+'" > (元)';
+
+    if(a == 1){
+        $(obj).html("-");
+        $(obj).next("div").html(str);
+        $(obj).data("id",2);
+    }else{
+        $(obj).html("+");
+        $(obj).next("div").html('');
+        $(obj).data("id",1);
+    }
+
+}
+Think.setValue("pid", {$info.pid|default = 0});
+Think.setValue("hide", {$info.hide|default = 0});
+Think.setValue("is_dev", {$info.is_dev|default = 0});
+//导航高亮
+highlight_subnav('{:U('index')}');
+</script>
+</block>

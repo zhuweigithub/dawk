@@ -74,7 +74,8 @@
                     <td class="action">
                         <a  onclick="editSubStore('{$vo.id}')" >编 辑</a> |
                         <a  onclick="delSubStore('{$vo.id}')" >删 除</a> |
-                        <a href="{:U('Shipping/addOther?sub_id='.$vo['id'].'&sub_name='.$vo['sub_store_name'])}">添加分区资费</a>
+                        <a href="{:U('Shipping/addOther?sub_id='.$vo['id'].'&sub_name='.$vo['sub_store_name'])}">添加分区资费</a> |
+                        <a href="{:U('Shipping/addZone?sub_id='.$vo['id'].'&sub_name='.$vo['sub_store_name'])}">编辑分区</a>
                        <!-- <a  onclick="bandMember(this)">调配仓管</a>-->
                     </td>
                 </tr>
