@@ -2,8 +2,8 @@
 
 <block name="body">
 
-    <div style="padding-left:10px;width:30%;float:right;border:1px solid rgba(255, 251, 129, 0.49);border: 1px dotted #1115ff;height: 500px;background: #fffc59;margin-right:5%;margin-top: 1rem  ">
-        <div style="margin-top:0.5rem;width: 100%;height: 3.5rem;">
+    <!--<div style="padding-left:10px;width:30%;float:right;border:1px solid rgba(255, 251, 129, 0.49);border: 1px dotted #1115ff;height: 500px;background: #fffc59;margin-right:5%;margin-top: 1rem  ">
+        <div style="margin-top:0.5rem;width: 100%;height: 3.5rem; ">
             <span style="font-size: 16px;font-weight: bold;margin-top: 1rem;display: inline-block">一区：</span><br/>
             <volist name="result" id="data">
                 <if condition="$data['zone_id'] eq 1 ">
@@ -34,7 +34,7 @@
                     <span style="margin-left: 2rem">{$data.name}</span>
                 </if>
             </volist>
-            <!--<br/> <span style="font-size: 16px;font-weight: bold;margin-top: 1rem;display: inline-block">六区：</span><br/>
+            &lt;!&ndash;<br/> <span style="font-size: 16px;font-weight: bold;margin-top: 1rem;display: inline-block">六区：</span><br/>
             <volist name="result" id="data">
                 <if condition="$data['zone_id'] eq 6 ">
                     <span style="margin-left: 2rem">{$data.name}</span>
@@ -45,22 +45,32 @@
                 <if condition="$data['zone_id'] eq 7 ">
                     <span style="margin-left: 2rem">{$data.name}</span>
                 </if>
-            </volist>-->
+            </volist>&ndash;&gt;
 
 
         </div>
     </div>
     <div class="data-table table-striped" id ="zone_button" style="width: 15%;float:right;border: 1px solid red;margin-right:5%;height: 500px;padding-top: 100px">
 
-    </div>
-    <div class="data-table table-striped" style="width: 35%">
+    </div>-->
+    <div class="data-table table-striped" >
         <div class="form-horizontal">
             <div class="form-item">
                 <label class="item-label">分仓名：<span id="sub_store" data-id="{$sub_id}" data-name="{$sub_name}">
                     {$sub_name|default=''}</span></label>
             </div>
-            <div class="form-item" id="province_list">
+                <div class="data-table table-striped" style="width: 65%">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th width="300">省份</th>
+                            <th width="800">选择分仓</th>
+                        </tr>
+                        </thead>
+                        <tbody id="province_list">
 
+                        </tbody>
+                    </table>
             </div>
 
 
@@ -81,9 +91,10 @@ $(function(){
 var Account = {};
 
 Account.init = function(){
-    Account.get_province_list();
+  //  Account.get_province_list();
+    Account.get_zone_list();
 }
-Account.get_province_list = function(){
+/*Account.get_province_list = function(){
     var store_id = $("#sub_store").data("id");
     $.ajax({
         url :"index.php?s=/Shipping/getProvinceList",
@@ -101,7 +112,7 @@ Account.get_province_list = function(){
     }
 
     });
-}
+}*/
 Account.get_zone_list = function(){
     var store_id = $("#sub_store").data("id");
     $.ajax({
@@ -110,16 +121,37 @@ Account.get_zone_list = function(){
         data:{store_id:store_id},
         traditional :true,
         success:function(data){
+            if(data == 2){
+                alert("分仓id不能为空");return;
+            }
             data=eval("("+data+")");
+            console.log(data);
             var str = "";
-            for(var i=0; i < data.length; i++){
-                str +=' <input type="checkbox" name="province_id" data-id="'+data[i].id+'"/> '+data[i].name+' <br/>';
+            var zone = data['zone'];
+            console.log(zone);
+            for(var i=0; i < data['items'].length-1; i++){
+                data[i] = data['items'][i];
+                str +='<tr><td>'+data[i]["name"]+'</td><td>';
+                str += saveZone(data[i]["id"],data[i]["zone_id_n"],zone);
+                str +='</td></tr>';
             }
             $("#province_list").html('');
             $("#province_list").html(str);
         }
 
     });
+}
+
+ function saveZone(province_id,zone_id,zone){
+  var str = "";
+    for(var i =0;i<zone.length ;i++){
+        if(zone_id == zone[i]['id']){
+            str += '&nbsp;&nbsp;&nbsp;&nbsp;<input type="radio" name="zone'+province_id+'" checked value="'+province_id+'" />'+zone[i]["zone_name"];
+        }else{
+            str += '&nbsp;&nbsp;&nbsp;&nbsp;<input type="radio" name="zone'+province_id+'" value="'+province_id+'"/>'+zone[i]["zone_name"];
+        }
+    }
+    return str;
 }
 
 function submit_ajax(){
