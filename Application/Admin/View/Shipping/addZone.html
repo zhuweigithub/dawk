@@ -59,12 +59,13 @@
                 <label class="item-label">分仓名：<span id="sub_store" data-id="{$sub_id}" data-name="{$sub_name}">
                     {$sub_name|default=''}</span></label>
             </div>
+			<button class="btn submit-btn" id="add_zone" style="margin-left:50% " onclick="Account.add_zone()">添加分仓</button>
                 <div class="data-table table-striped" style="width: 65%">
                     <table>
                         <thead>
                         <tr>
                             <th width="300">省份</th>
-                            <th width="800">选择分仓</th>
+                            <th width="500">选择分仓</th>
                         </tr>
                         </thead>
                         <tbody id="province_list">
@@ -113,6 +114,18 @@ Account.init = function(){
 
     });
 }*/
+Account.add_zone = function(){
+	var store_id = $("#sub_store").data("id");
+	$.ajax({
+		url :"index.php?s=/Shipping/addZoneAjax",
+		type:"post",
+		data:{store_id:store_id},
+		traditional :true,
+		success:function(data){
+
+		}
+	});
+}
 Account.get_zone_list = function(){
     var store_id = $("#sub_store").data("id");
     $.ajax({

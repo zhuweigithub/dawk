@@ -51,6 +51,15 @@ class ShippingController extends AdminController
         $result = M("Province")->select();
         echo json_encode($result);
     }
+
+	public function addZoneAjax(){
+		$param['store_id'] = $_POST['store_id'];
+		if(empty($param['store_id'])){
+			echo 2;//表示store_id不能为空
+		}
+
+
+	}
     /*public function getZoneList(){
         $param['store_id'] = $_POST['store_id'];
         if(empty($param['store_id'])){
