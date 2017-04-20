@@ -2,70 +2,20 @@
 
 <block name="body">
 
-    <!--<div style="padding-left:10px;width:30%;float:right;border:1px solid rgba(255, 251, 129, 0.49);border: 1px dotted #1115ff;height: 500px;background: #fffc59;margin-right:5%;margin-top: 1rem  ">
-        <div style="margin-top:0.5rem;width: 100%;height: 3.5rem; ">
-            <span style="font-size: 16px;font-weight: bold;margin-top: 1rem;display: inline-block">一区：</span><br/>
-            <volist name="result" id="data">
-                <if condition="$data['zone_id'] eq 1 ">
-                    <span style="margin-left: 2rem">{$data.name}</span>
-                </if>
-            </volist>
-            <br/> <span style="font-size: 16px;font-weight: bold;margin-top: 1rem;display: inline-block">二区：</span><br/>
-            <volist name="result" id="data">
-                <if condition="$data['zone_id'] eq 2 ">
-                    <span style="margin-left: 2rem">{$data.name}</span>
-                </if>
-            </volist>
-            <br/> <span style="font-size: 16px;font-weight: bold;margin-top: 1rem;display: inline-block">三区：</span><br/>
-            <volist name="result" id="data">
-                <if condition="$data['zone_id'] eq 3 ">
-                    <span style="margin-left: 1.5rem">{$data.name}</span>
-                </if>
-            </volist>
-            <br/> <span style="font-size: 16px;font-weight: bold;margin-top: 1rem;display: inline-block">四区：</span><br/>
-            <volist name="result" id="data">
-                <if condition="$data['zone_id'] eq 4 ">
-                    <span style="margin-left: 2rem">{$data.name}</span>
-                </if>
-            </volist>
-            <br/> <span style="font-size: 16px;font-weight: bold;margin-top: 1rem;display: inline-block">五区：</span><br/>
-            <volist name="result" id="data">
-                <if condition="$data['zone_id'] eq 5 ">
-                    <span style="margin-left: 2rem">{$data.name}</span>
-                </if>
-            </volist>
-            &lt;!&ndash;<br/> <span style="font-size: 16px;font-weight: bold;margin-top: 1rem;display: inline-block">六区：</span><br/>
-            <volist name="result" id="data">
-                <if condition="$data['zone_id'] eq 6 ">
-                    <span style="margin-left: 2rem">{$data.name}</span>
-                </if>
-            </volist>
-            <br/> <span style="font-size: 16px;font-weight: bold;margin-top: 1rem;display: inline-block">七区：</span><br/>
-            <volist name="result" id="data">
-                <if condition="$data['zone_id'] eq 7 ">
-                    <span style="margin-left: 2rem">{$data.name}</span>
-                </if>
-            </volist>&ndash;&gt;
 
-
-        </div>
-    </div>
-    <div class="data-table table-striped" id ="zone_button" style="width: 15%;float:right;border: 1px solid red;margin-right:5%;height: 500px;padding-top: 100px">
-
-    </div>-->
     <div class="data-table table-striped" >
         <div class="form-horizontal">
             <div class="form-item">
                 <label class="item-label">分仓名：<span id="sub_store" data-id="{$sub_id}" data-name="{$sub_name}">
                     {$sub_name|default=''}</span></label>
             </div>
-			<button class="btn submit-btn" id="add_zone" style="margin-left:50% " onclick="Account.add_zone()">添加分仓</button>
+			<button class="btn submit-btn" id="add_zone" style="margin-left:50% " onclick="Account.add_zone()">添加分区</button>
                 <div class="data-table table-striped" style="width: 65%">
                     <table>
                         <thead>
                         <tr>
                             <th width="300">省份</th>
-                            <th width="500">选择分仓</th>
+                            <th width="700">选择分仓</th>
                         </tr>
                         </thead>
                         <tbody id="province_list">
@@ -85,7 +35,7 @@
 
 <block name="script">
 <script type="text/javascript">
-
+    var max_zone = 0;
 $(function(){
     Account.init();
 });
@@ -96,15 +46,27 @@ Account.init = function(){
 }
 Account.add_zone = function(){
 	var store_id = $("#sub_store").data("id");
-	$.ajax({
-		url :"index.php?s=/Shipping/addZoneAjax",
-		type:"post",
-		data:{store_id:store_id},
-		traditional :true,
-		success:function(data){
+    var zoneArr = ["一区","二区","三区","四区","五区","六区","七区","八区","九区"];
+    if(max_zone >= 8 ){
+      alert("最多只能添加八个分区");return;
+    }
+    var zone_name = zoneArr[max_zone];
 
-		}
-	});
+    if(confirm("是否确认添加"+zone_name)){
+        $.ajax({
+            url :"index.php?s=/Shipping/addZoneAjax",
+            type:"post",
+            data:{store_id:store_id,zone_name:zone_name},
+            traditional :true,
+            success:function(data){
+                if(data == 1){
+                    alert("添加分区成功");
+                    window.location.reload();
+                    return;
+                }
+            }
+        });
+    }
 }
 Account.get_zone_list = function(){
     var store_id = $("#sub_store").data("id");
@@ -118,15 +80,18 @@ Account.get_zone_list = function(){
                 alert("分仓id不能为空");return;
             }
             data=eval("("+data+")");
-            console.log(data);
             var str = "";
-            var zone = data['zone'];
-            console.log(zone);
-            for(var i=0; i < data['items'].length-1; i++){
-                data[i] = data['items'][i];
-                str +='<tr><td>'+data[i]["name"]+'</td><td>';
-                str += saveZone(data[i]["id"],data[i]["zone_id_n"],zone);
-                str +='</td></tr>';
+            if(!data['zone']){
+                str = '<tr><td colspan="2" style="text-align: center">请先添加分区</td></tr>';
+            }else{
+                var zone = data['zone'];
+                console.log(zone);
+                for(var i=0; i < data['items'].length-1; i++){
+                    data[i] = data['items'][i];
+                    str +='<tr><td>'+data[i]["name"]+'</td><td>';
+                    str += saveZone(data[i]["id"],data[i]["zone_id_n"],zone);
+                    str +='</td></tr>';
+                }
             }
             $("#province_list").html('');
             $("#province_list").html(str);
@@ -141,10 +106,9 @@ Account.submit_ajax = function(){
 	var zone_five = "";
 	var zone_six = "";
 	var zone_seven = "";
-	alert($("input[type=radio]").val());
-	$("input[type=radio]").each(function(){
+	$("input[type=radio]:checked").each(function(){
 		var province_id = $(this).data("province");
-		switch ($(this).attr("").data("id")){
+		switch ($(this).data("id")){
 			case 1:
 				zone_one += province_id+",";
 				break;
@@ -168,17 +132,31 @@ Account.submit_ajax = function(){
 				break;
 		}
 	});
-	alert(zone_one);
-	alert(zone_two);
-	alert(zone_three);
-	alert(zone_four);
-	alert(zone_five);
-	alert(zone_six);
-	alert(zone_seven);
+
+    var store_id = $("#sub_store").data("id");
+
+    $.ajax({
+        url :"index.php?s=/Shipping/addZoneProvinceIds",
+        type:"post",
+        data:{store_id:store_id,zone_one:zone_one,zone_two:zone_two,zone_three:zone_three,zone_four:zone_four,zone_five:zone_five,
+            zone_six:zone_six,zone_seven:zone_seven},
+        traditional :true,
+        success:function(data){
+            if(data == 2){
+                alert("分仓id不能为空");return;
+            }
+            if(data == 1){
+                alert("编辑分区成功");
+                return;
+            }
+
+        }
+    });
 }
 
  function saveZone(province_id,zone_id,zone){
   var str = "";
+     max_zone = zone.length;
     for(var i =0;i<zone.length ;i++){
         if(zone_id == zone[i]['id']){
             str += '&nbsp;&nbsp;&nbsp;&nbsp;<input type="radio" data-province="'+province_id+'" data-id="'+ zone[i]["id"]+'" name="zone'+province_id+'" checked value="'+province_id+'" />'+zone[i]["zone_name"];

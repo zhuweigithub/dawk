@@ -54,9 +54,13 @@ class ShippingController extends AdminController
 
 	public function addZoneAjax(){
 		$param['store_id'] = $_POST['store_id'];
-		if(empty($param['store_id'])){
+		$param['zone_name'] = $_POST['zone_name'];
+		if(empty($param['store_id']) || empty($param['zone_name'])){
 			echo 2;//表示store_id不能为空
 		}
+
+        M("Zone")->add($param);
+        echo 1;
 
 
 	}
@@ -89,17 +93,145 @@ class ShippingController extends AdminController
         $province['items'] = M("Province")->select();
         if(count($result) > 0){
             for($i=0 ; $i < count($result) ; $i++){
-                $provinceIds = str_split(',',$result[$i]['province_ids']);
-                for($j=0 ; $j < count($province['items'])-1;$j++){
-                 if(!empty($province['items'][$provinceIds[$j]])){
-                     $province['items'][$j]['zone_name_n'] = $result[$i]['zone_name'];
-                     $province['items'][$j]['zone_id_n'] = $result[$i]['zone_id'];
-                 }
+                $provinceIds = explode(',',$result[$i]['province_ids']);
+                for($j=0 ; $j < count($provinceIds)-1;$j++){
+                    for($z = 0; $z < count($province['items']) ;$z++ ){
+                        if($province['items'][$z]["id"] == $provinceIds[$j]){
+                            $province['items'][$z]['zone_name_n'] = $result[$i]['zone_name'];
+                            $province['items'][$z]['zone_id_n'] = $result[$i]['id'];
+                        }
+                    }
                 }
             }
             $province['zone'] = $result;
         }
         echo json_encode($province);
+    }
+
+    public function addZoneProvinceIds(){
+        $store_id = $_POST['store_id'];
+        if(empty($store_id)){
+            echo 2;exit;//表示store_id不能为空
+        }
+
+        $zone_one    = $_POST['zone_one'];
+        $zone_two    = $_POST['zone_two'];
+        $zone_three    = $_POST['zone_three'];
+        $zone_four    = $_POST['zone_four'];
+        $zone_five    = $_POST['zone_five'];
+        $zone_six    = $_POST['zone_six'];
+        $zone_seven    = $_POST['zone_seven'];
+            if($zone_one != null){
+                $arr = array(
+                    "province_ids" =>$zone_one,
+                    "zone_name" =>"一区",
+                    "store_id" =>$store_id,
+                );
+                $id = $this->selectZoneId("一区",$store_id);
+                if($id > 0){
+                    $arr['id'] = $id;
+                    $id = M("Zone")->save($arr);
+                }else{
+                    $id = M("Zone")->add($arr);
+                }
+
+            }
+            if($zone_two != null){
+                $arr = array(
+                    "province_ids" =>$zone_two,
+                    "zone_name" =>"二区",
+                    "store_id" =>$store_id,
+                );
+                $id = $this->selectZoneId("二区",$store_id);
+                if($id > 0){
+                    $arr['id'] = $id;
+                    $id = M("Zone")->save($arr);
+                }else{
+                    $id = M("Zone")->add($arr);
+                }
+            }if($zone_three != null){
+                $arr = array(
+                    "province_ids" =>$zone_three,
+                    "zone_name" =>"三区",
+                    "store_id" =>$store_id,
+                );
+                $id = $this->selectZoneId("三区",$store_id);
+                if($id > 0){
+                    $arr['id'] = $id;
+                    $id = M("Zone")->save($arr);
+                }else{
+                    $id = M("Zone")->add($arr);
+                }
+            }
+            if($zone_four != null){
+                $arr = array(
+                    "province_ids" =>$zone_four,
+                    "zone_name" =>"四区",
+                    "store_id" =>$store_id,
+                );
+                $id = $this->selectZoneId("四区",$store_id);
+                if($id > 0){
+                    $arr['id'] = $id;
+                    $id = M("Zone")->save($arr);
+                }else{
+                    $id = M("Zone")->add($arr);
+                }
+            }
+            if($zone_five != null){
+                $arr = array(
+                    "province_ids" =>$zone_five,
+                    "zone_name" =>"五区",
+                    "store_id" =>$store_id,
+                );
+                $id = $this->selectZoneId("五区",$store_id);
+                if($id > 0){
+                    $arr['id'] = $id;
+                    $id = M("Zone")->save($arr);
+                }else{
+                    $id = M("Zone")->add($arr);
+                }
+            }
+            if($zone_six != null){
+                $arr = array(
+                    "province_ids" =>$zone_six,
+                    "zone_name" =>"六区",
+                    "store_id" =>$store_id,
+                );
+                $id = $this->selectZoneId("六区",$store_id);
+                if($id > 0){
+                    $arr['id'] = $id;
+                    $id = M("Zone")->save($arr);
+                }else{
+                    $id = M("Zone")->add($arr);
+                }
+            }
+            if($zone_seven != null){
+                $arr = array(
+                    "province_ids" =>$zone_seven,
+                    "zone_name" =>"七区",
+                    "store_id" =>$store_id,
+                );
+                $id = $this->selectZoneId("七区",$store_id);
+                if($id > 0){
+                    $arr['id'] = $id;
+                    $id = M("Zone")->save($arr);
+                }else{
+                    $id = M("Zone")->add($arr);
+                }
+            }
+
+
+      echo 1;
+
+    }
+    private function selectZoneId($zone_name,$store_id){
+        $param['zone_name'] = $zone_name;
+        $param['store_id']  = $store_id;
+        $zoneObj = M("Zone")->where($param)->find();
+        if(count($zoneObj) > 0){
+            return $zoneObj['id'];
+        }
+        return 0;
     }
 
     public function addOther(){
@@ -109,12 +241,49 @@ class ShippingController extends AdminController
             $this->error("分仓不能为空！");
         }
 
+
         $result = M("Province")->field("id,name,zone_name,zone_id")->order("zone_id")->select();
         $this->assign("result",$result);
         $this->assign("sub_id",$sub_id);
         $this->assign("sub_name",$sub_name);
         $this->display();
     }
+
+    /*
+     * public function addOther(){
+        $sub_id = $_GET['sub_id'];
+        $sub_name = $_GET["sub_name"];
+        if(empty($sub_id) || empty($sub_name)){
+            $this->error("分仓不能为空！");
+        }
+
+        $param['status'] = 0;
+        $param['store_id'] = $sub_id;
+        $result = M("Zone")->where($param)->select();
+        $province = M("Province")->select();
+        if(count($result) > 0){
+            for($i=0 ; $i < count($result) ; $i++){
+                $provinceIds = explode(',',$result[$i]['province_ids']);
+                for($j=0 ; $j < count($provinceIds)-1;$j++){
+                    for($z = 0; $z < count($province) ;$z++ ){
+                        if($province[$z]["id"] == $provinceIds[$j]){
+                            $province[$z]['zone_name_n'] = $result[$i]['zone_name'];
+                            $province[$z]['zone_id_n'] = $result[$i]['id'];
+                        }
+                    }
+                }
+            }
+        }
+
+        //$result = M("Province")->field("id,name,zone_name,zone_id")->order("zone_id")->select();
+        $this->assign("result",$province);
+        $this->assign("zone",$result);
+        $this->assign("sub_id",$sub_id);
+        $this->assign("sub_name",$sub_name);
+        $this->display();
+    }
+     *
+     * */
 
 	public function editOther(){
 		$sub_id = $_GET['sub_id'];
@@ -238,7 +407,7 @@ class ShippingController extends AdminController
             );
             $db -> add($arr5);
 
-          /*  $staple_ext_6 = $_POST['staple_ext_6'];
+            $staple_ext_6 = $_POST['staple_ext_6'];
             $staple_ext_6 = json_decode($staple_ext_6,true);
             $arr6 = array(
                 "staple_id" => $id,
@@ -272,7 +441,24 @@ class ShippingController extends AdminController
                 "second_weight_start_b" =>$staple_ext_7['second_weight_start_b'],
                 "second_fee_b" =>$staple_ext_7['second_fee_b'],
             );
-            $db -> add($arr7);*/
+            $db -> add($arr7);
+            $staple_ext_8 = $_POST['staple_ext_8'];
+            $staple_ext_8 = json_decode($staple_ext_8,true);
+            $arr8 = array(
+                "staple_id" => $id,
+                "zone_id" =>$staple_ext_8['zone_id'],
+                "zone_name" =>$staple_ext_8['zone_name'],
+                "first_weight_a" =>$staple_ext_8['first_weight_a'],
+                "first_fee_a" =>$staple_ext_8['first_fee_a'],
+                "first_weight_b" =>$staple_ext_8['first_weight_b'],
+                "first_fee_b" =>$staple_ext_8['first_fee_b'],
+                "second_weight_start_a" =>$staple_ext_8['second_weight_start_a'],
+                "second_weight_end" =>$staple_ext_8['second_weight_end'],
+                "second_fee_a" =>$staple_ext_8['second_fee_a'],
+                "second_weight_start_b" =>$staple_ext_8['second_weight_start_b'],
+                "second_fee_b" =>$staple_ext_8['second_fee_b'],
+            );
+            $db -> add($arr8);
 
         }
 		echo 1;
@@ -380,6 +566,58 @@ class ShippingController extends AdminController
 				"second_fee_b" =>$staple_ext_5['second_fee_b'],
 			);
 			$db -> save($arr5);
+        $staple_ext_6 = $_POST['staple_ext_6'];
+        $staple_ext_6 = json_decode($staple_ext_6,true);
+        $arr6 = array(
+            "id" => $staple_ext_6['id'],
+            "zone_id" =>$staple_ext_6['zone_id'],
+            "zone_name" =>$staple_ext_6['zone_name'],
+            "first_weight_a" =>$staple_ext_6['first_weight_a'],
+            "first_fee_a" =>$staple_ext_6['first_fee_a'],
+            "first_weight_b" =>$staple_ext_6['first_weight_b'],
+            "first_fee_b" =>$staple_ext_6['first_fee_b'],
+            "second_weight_start_a" =>$staple_ext_6['second_weight_start_a'],
+            "second_weight_end" =>$staple_ext_6['second_weight_end'],
+            "second_fee_a" =>$staple_ext_6['second_fee_a'],
+            "second_weight_start_b" =>$staple_ext_6['second_weight_start_b'],
+            "second_fee_b" =>$staple_ext_6['second_fee_b'],
+        );
+        $db -> save($arr6);
+
+        $staple_ext_7 = $_POST['staple_ext_7'];
+        $staple_ext_7 = json_decode($staple_ext_7,true);
+        $arr7 = array(
+            "id" => $staple_ext_7['id'],
+            "zone_id" =>$staple_ext_7['zone_id'],
+            "zone_name" =>$staple_ext_7['zone_name'],
+            "first_weight_a" =>$staple_ext_7['first_weight_a'],
+            "first_fee_a" =>$staple_ext_7['first_fee_a'],
+            "first_weight_b" =>$staple_ext_7['first_weight_b'],
+            "first_fee_b" =>$staple_ext_7['first_fee_b'],
+            "second_weight_start_a" =>$staple_ext_7['second_weight_start_a'],
+            "second_weight_end" =>$staple_ext_7['second_weight_end'],
+            "second_fee_a" =>$staple_ext_7['second_fee_a'],
+            "second_weight_start_b" =>$staple_ext_7['second_weight_start_b'],
+            "second_fee_b" =>$staple_ext_7['second_fee_b'],
+        );
+        $db -> save($arr7);
+        $staple_ext_8 = $_POST['staple_ext_8'];
+        $staple_ext_8 = json_decode($staple_ext_8,true);
+        $arr8 = array(
+            "id" => $staple_ext_8['id'],
+            "zone_id" =>$staple_ext_8['zone_id'],
+            "zone_name" =>$staple_ext_8['zone_name'],
+            "first_weight_a" =>$staple_ext_8['first_weight_a'],
+            "first_fee_a" =>$staple_ext_8['first_fee_a'],
+            "first_weight_b" =>$staple_ext_8['first_weight_b'],
+            "first_fee_b" =>$staple_ext_8['first_fee_b'],
+            "second_weight_start_a" =>$staple_ext_8['second_weight_start_a'],
+            "second_weight_end" =>$staple_ext_8['second_weight_end'],
+            "second_fee_a" =>$staple_ext_8['second_fee_a'],
+            "second_weight_start_b" =>$staple_ext_8['second_weight_start_b'],
+            "second_fee_b" =>$staple_ext_8['second_fee_b'],
+        );
+        $db -> save($arr8);
 		//}
 		echo 1;
 	}
