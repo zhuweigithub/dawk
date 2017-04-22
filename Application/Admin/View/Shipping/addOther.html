@@ -2,437 +2,221 @@
 
 <block name="body">
 
-    <div style="padding-left:10px;width:35%;float:right;border:1px solid rgba(255, 251, 129, 0.49);border: 1px dotted #1115ff;height: 700px;background: #fffc59;margin-right:5%;margin-top: 1rem  ">
-        <div style="margin-top:0.5rem;width: 100%;height: 3.5rem;">
-            <span style="font-size: 16px;font-weight: bold;margin-top: 1rem;display: inline-block">一区：</span><br/>
-            <volist name="result" id="data">
-                <if condition="$data['zone_id'] eq 1 ">
-                    <span style="margin-left: 2rem">{$data.name}</span>
-                </if>
-            </volist>
-            <br/> <span style="font-size: 16px;font-weight: bold;margin-top: 1rem;display: inline-block">二区：</span><br/>
-            <volist name="result" id="data">
-                <if condition="$data['zone_id'] eq 2 ">
-                    <span style="margin-left: 2rem">{$data.name}</span>
-                </if>
-            </volist>
-            <br/> <span style="font-size: 16px;font-weight: bold;margin-top: 1rem;display: inline-block">三区：</span><br/>
-            <volist name="result" id="data">
-                <if condition="$data['zone_id'] eq 3 ">
-                    <span style="margin-left: 1.5rem">{$data.name}</span>
-                </if>
-            </volist>
-            <br/> <span style="font-size: 16px;font-weight: bold;margin-top: 1rem;display: inline-block">四区：</span><br/>
-            <volist name="result" id="data">
-                <if condition="$data['zone_id'] eq 4 ">
-                    <span style="margin-left: 2rem">{$data.name}</span>
-                </if>
-            </volist>
-            <br/> <span style="font-size: 16px;font-weight: bold;margin-top: 1rem;display: inline-block">五区：</span><br/>
-            <volist name="result" id="data">
-                <if condition="$data['zone_id'] eq 5 ">
-                    <span style="margin-left: 2rem">{$data.name}</span>
-                </if>
-            </volist>
-            <br/> <span style="font-size: 16px;font-weight: bold;margin-top: 1rem;display: inline-block">六区：</span><br/>
-            <volist name="result" id="data">
-                <if condition="$data['zone_id'] eq 6 ">
-                    <span style="margin-left: 2rem">{$data.name}</span>
-                </if>
-            </volist>
-            <br/> <span style="font-size: 16px;font-weight: bold;margin-top: 1rem;display: inline-block">七区：</span><br/>
-            <volist name="result" id="data">
-                <if condition="$data['zone_id'] eq 7 ">
-                    <span style="margin-left: 2rem">{$data.name}</span>
-                </if>
-            </volist>
-            <br/> <span style="font-size: 16px;font-weight: bold;margin-top: 1rem;display: inline-block">八区：</span><br/>
-            <volist name="result" id="data">
-                <if condition="$data['zone_id'] eq 8 ">
-                    <span style="margin-left: 2rem">{$data.name}</span>
-                </if>
-            </volist>
+<style>
+	body * {
+		-webkit-user-select: none;
+		-moz-user-select: none;
+		-ms-user-select: none;
+		user-select: none;
+	}
 
+	.main .Warehouse table {
+		border-collapse: collapse;
+		width: 800px;
+	}
 
-        </div>
-    </div>
-    <div class="data-table table-striped" style="width: 55%">
-    <div class="form-horizontal">
-        <div class="form-item">
-            <label class="item-label">分仓名：<span id="sub_store" data-id="{$sub_id}">{$sub_name|default=''}</span></label>
-        </div>
-        <div class="form-item">
-            <label class="item-label">首重<span class="check-tips">（起始重量）</span></label>
-            <div class="controls">
-                <div style="width: 15%;float: left;min-width: 150px">
-                <input type="text" class="text input-small" name="first_weight" > (KG)
-                </div>
-                <div style="width: 60%;float: left;line-height: 2rem">
-                资费：<br/>
-                一区： <input type="text" class="text input-small" name="first_weight_fee_1" > (元)
-                    <span style="font-size: 20px;display: inline-block;width: 30px;cursor: pointer;text-align: center" data-id="1" onClick="show_first(this)">+</span>
-                    <div class="show_first" style="display: inline-block;margin-left:3rem;" data-node="1">
-                    </div><br/>
-                二区： <input type="text" class="text input-small" name="first_weight_fee_2" > (元)
+	.main .Warehouse table td {
+		border: 1px solid #90895D;
+		padding: 8px 10px;
+		text-align: center;
+		font-size: 12px;
+	}
 
-                    <span style="font-size: 20px;display: inline-block;width: 30px;cursor: pointer;text-align: center" data-id="1" onClick="show_first(this)">+</span>
-                    <div class="show_first" style="display: inline-block;margin-left:3rem;" data-node="2">
-                    </div><br/>
-                三区： <input type="text" class="text input-small" name="first_weight_fee_3" > (元)
+	.main .Warehouse table td.item {
+		text-align: left;
+	}
 
-                    <span style="font-size: 20px;display: inline-block;width: 30px;cursor: pointer;text-align: center" data-id="1" onClick="show_first(this)">+</span>
-                    <div class="show_first" style="display: inline-block;margin-left:3rem;" data-node="3">
-                    </div><br/>
-                四区： <input type="text" class="text input-small" name="first_weight_fee_4" > (元)
+	.main .Warehouse table td input[type=text] {
+		border: 0;
+		border-bottom: 1px solid blueviolet;
+		outline: 0;
+		width: 20px;
+		padding: 5px 10px;
+	}
 
-                    <span style="font-size: 20px;display: inline-block;width: 30px;cursor: pointer;text-align: center" data-id="1" onClick="show_first(this)">+</span>
-                    <div class="show_first" style="display: inline-block;margin-left:3rem;" data-node="4">
-                    </div><br/>
-                五区： <input type="text" class="text input-small" name="first_weight_fee_5" > (元)
+	.main .Warehouse table th {
+		background: #ddd;
+		padding: 15px 0;
+		text-align: center;
+		border: 1px solid #90895D;
+	}
 
-                    <span style="font-size: 20px;display: inline-block;width: 30px;cursor: pointer;text-align: center" data-id="1" onClick="show_first(this)">+</span>
-                    <div class="show_first" style="display: inline-block;margin-left:3rem;" data-node="5">
-                    </div><br/>
-                六区： <input type="text" class="text input-small" name="first_weight_fee_6" > (元)
+	.main .Warehouse table td span {
+		color: #888;
+	}
 
-                    <span style="font-size: 20px;display: inline-block;width: 30px;cursor: pointer;text-align: center" data-id="1" onClick="show_first(this)">+</span>
-                    <div class="show_first" style="display: inline-block;margin-left:3rem;" data-node="6">
-                    </div><br/>
-                七区： <input type="text" class="text input-small" name="first_weight_fee_7" > (元)
+	.main .Warehouse table td p {
+		display: inline-flex;
+		margin-left: 20px;
+	}
 
-                    <span style="font-size: 20px;display: inline-block;width: 30px;cursor: pointer;text-align: center" data-id="1" onClick="show_first(this)">+</span>
-                    <div class="show_first" style="display: inline-block;margin-left:3rem;" data-node="7">
-                    </div><br/>
-                    八区： <input type="text" class="text input-small" name="first_weight_fee_8" > (元)
+	.main .Warehouse table td label {
+		background: #90895D;
+		padding: 5px 8px;
+	}
 
-                    <span style="font-size: 20px;display: inline-block;width: 30px;cursor: pointer;text-align: center" data-id="1" onClick="show_first(this)">+</span>
-                    <div class="show_first" style="display: inline-block;margin-left:3rem;" data-node="8">
-                    </div><br/>
-                </div>
-            </div>
-        </div>
-        <div class="form-item">
-            <label class="item-label">续重<span class="check-tips">（第二个重量不填表示之后每1KG资费多少元）</span></label>
-            <div class="controls">
-                一区： <input type="text" class="text input-small" name="second_weight_start_1" style="width: 30px" > -
-                <input type="text" class="text input-small" name="second_weight_end_1" style="width: 30px" >(KG) 资费
-                <input type="text" class="text input-small" name="second_weight_fee_1" > (元)
-                <span style="font-size: 20px;display: inline-block;width: 30px;cursor: pointer;text-align: center" data-id="1" onClick="show_second(this)">+</span>
-                <div style="display: inline-block;margin-left:7rem;" data-node="1" ></div>
-                <br/>
-                二区： <input type="text" class="text input-small" name="second_weight_start_2" style="width: 30px" > -
-                <input type="text" class="text input-small" name="second_weight_end_2" style="width: 30px" >(KG) 资费
-                <input type="text" class="text input-small" name="second_weight_fee_2" > (元)
-                <span style="font-size: 20px;display: inline-block;width: 30px;cursor: pointer;text-align: center" data-id="1" onClick="show_second(this)">+</span>
-                <div style="display: inline-block;margin-left:7rem;" data-node="2" ></div>
-                <br/>
-                三区： <input type="text" class="text input-small" name="second_weight_start_3" style="width: 30px" > -
-                <input type="text" class="text input-small" name="second_weight_end_3" style="width: 30px" >(KG) 资费
-                <input type="text" class="text input-small" name="second_weight_fee_3" > (元)
-                <span style="font-size: 20px;display: inline-block;width: 30px;cursor: pointer;text-align: center" data-id="1" onClick="show_second(this)">+</span>
-                <div style="display: inline-block;margin-left:7rem;" data-node="3" ></div>
-                <br/>
-                四区： <input type="text" class="text input-small" name="second_weight_start_4" style="width: 30px" > -
-                <input type="text" class="text input-small" name="second_weight_end_4" style="width: 30px" >(KG) 资费
-                <input type="text" class="text input-small" name="second_weight_fee_4" > (元)
-                <span style="font-size: 20px;display: inline-block;width: 30px;cursor: pointer;text-align: center" data-id="1" onClick="show_second(this)">+</span>
-                <div style="display: inline-block;margin-left:7rem;"  data-node="4"></div>
-                <br/>
-                五区： <input type="text" class="text input-small" name="second_weight_start_5" style="width: 30px" > -
-                <input type="text" class="text input-small" name="second_weight_end_5" style="width: 30px" >(KG) 资费
-                <input type="text" class="text input-small" name="second_weight_fee_5" > (元)
-                <span style="font-size: 20px;display: inline-block;width: 30px;cursor: pointer;text-align: center" data-id="1" onClick="show_second(this)">+</span>
-                <div style="display: inline-block;margin-left:7rem;"  data-node="5"></div>
-                <br/>
-                六区： <input type="text" class="text input-small" name="second_weight_start_6" style="width: 30px" > -
-                <input type="text" class="text input-small" name="second_weight_end_6" style="width: 30px" >(KG) 资费
-                <input type="text" class="text input-small" name="second_weight_fee_6" > (元)
-                <span style="font-size: 20px;display: inline-block;width: 30px;cursor: pointer;text-align: center" data-id="1" onClick="show_second(this)">+</span>
-                <div style="display: inline-block;margin-left:7rem;"  data-node="6"></div>
-                <br/>
-                七区： <input type="text" class="text input-small" name="second_weight_start_7" style="width: 30px" > -
-                <input type="text" class="text input-small" name="second_weight_end_7" style="width: 30px" >(KG) 资费
-                <input type="text" class="text input-small" name="second_weight_fee_7" > (元)
-                <span style="font-size: 20px;display: inline-block;width: 30px;cursor: pointer;text-align: center" data-id="1" onClick="show_second(this)">+</span>
-                <div style="display: inline-block;margin-left:7rem;"  data-node="8"></div> <br/>
-                八区： <input type="text" class="text input-small" name="second_weight_start_8" style="width: 30px" > -
-                <input type="text" class="text input-small" name="second_weight_end_8" style="width: 30px" >(KG) 资费
-                <input type="text" class="text input-small" name="second_weight_fee_8" > (元)
-                <span style="font-size: 20px;display: inline-block;width: 30px;cursor: pointer;text-align: center" data-id="1" onClick="show_second(this)">+</span>
-                <div style="display: inline-block;margin-left:7rem;"  data-node="8"></div>
-               </div>
-        </div>
+	.main .Warehouse table td input[type=checkbox] {
+		margin-right: 8px;
+	}
 
-        <div class="form-item">
-            <button class="btn submit-btn" id="submit" onclick="submit_ajax()">确 定</button>
-            <button class="btn btn-return" onclick="javascript:history.back(-1);return false;">返 回</button>
-        </div>
-    </div>
-    </div>
-</block>
+	.main .Warehouse table td.divLine {
+		height: 30px;
+	}
 
-<block name="script">
-    <script type="text/javascript">
-        function submit_ajax(){
-            var first_weight = $("input[name=first_weight]").val();
-            var first_weight_fee_1 = $("input[name=first_weight_fee_1]").val();
-            var first_weight_fee_2 = $("input[name=first_weight_fee_2]").val();
-            var first_weight_fee_3 = $("input[name=first_weight_fee_3]").val();
-            var first_weight_fee_4 = $("input[name=first_weight_fee_4]").val();
-            var first_weight_fee_5 = $("input[name=first_weight_fee_5]").val();
-            var first_weight_fee_6 = $("input[name=first_weight_fee_6]").val();
-            var first_weight_fee_7 = $("input[name=first_weight_fee_7]").val();
-            var first_weight_fee_8 = $("input[name=first_weight_fee_8]").val();
-            if(first_weight == "" ){
-                alert("首重分区资费不能为空！");return;
-            }
+	.queue {
+		font-size: 0;
+		-webkit-text-size-adjust: none;
+		border: 1px solid #2db9c7;
+		width: 800px;
+		padding: 20px;
+	}
 
-            var first_gt_weight_1 = $("input[name=first_gt_weight_1]").val();
-            var first_gt_weight_fee_1 = $("input[name=first_gt_weight_fee_1]").val();
-            var first_gt_weight_2 = $("input[name=first_gt_weight_2]").val();
-            var first_gt_weight_fee_2 = $("input[name=first_gt_weight_fee_2]").val();
-            var first_gt_weight_3 = $("input[name=first_gt_weight_3]").val();
-            var first_gt_weight_fee_3 = $("input[name=first_gt_weight_fee_3]").val();
-            var first_gt_weight_4 = $("input[name=first_gt_weight_4]").val();
-            var first_gt_weight_fee_4 = $("input[name=first_gt_weight_fee_4]").val();
-            var first_gt_weight_5 = $("input[name=first_gt_weight_5]").val();
-            var first_gt_weight_fee_5 = $("input[name=first_gt_weight_fee_5]").val();
-            var first_gt_weight_6 = $("input[name=first_gt_weight_6]").val();
-            var first_gt_weight_fee_6 = $("input[name=first_gt_weight_fee_6]").val();
-            var first_gt_weight_7 = $("input[name=first_gt_weight_7]").val();
-            var first_gt_weight_fee_7 = $("input[name=first_gt_weight_fee_7]").val();
-            var first_gt_weight_8 = $("input[name=first_gt_weight_8]").val();
-            var first_gt_weight_fee_8 = $("input[name=first_gt_weight_fee_8]").val();
+	.dragger {
+		display: inline-block;
+		margin: 5px;
+		padding: 8px;
+		background: white;
+		border: 1px solid #000000;
+		border-radius: 20px;
+		text-align: center;
+		font-size: 10px;
+		cursor: move;
+	}
 
+	#divAreas {
+	}
 
+	#divAreas p.areaTitle {
+		margin: 30px 0 10px 0;
+		font-size: 16px;
+		font-weight: bold;
+	}
+</style>
 
-            var second_weight_start_1 = $("input[name=second_weight_start_1]").val();
-            var second_weight_end_1 = $("input[name=second_weight_end_1]").val();
-            var second_weight_fee_1 = $("input[name=second_weight_fee_1]").val();
-            var second_weight_start_2 = $("input[name=second_weight_start_2]").val();
-            var second_weight_end_2 = $("input[name=second_weight_end_2]").val();
-            var second_weight_fee_2 = $("input[name=second_weight_fee_2]").val();
-            var second_weight_start_3 = $("input[name=second_weight_start_3]").val();
-            var second_weight_end_3 = $("input[name=second_weight_end_3]").val();
-            var second_weight_fee_3 = $("input[name=second_weight_fee_3]").val();
-            var second_weight_start_4 = $("input[name=second_weight_start_4]").val();
-            var second_weight_end_4 = $("input[name=second_weight_end_4]").val();
-            var second_weight_fee_4 = $("input[name=second_weight_fee_4]").val();
-            var second_weight_start_5 = $("input[name=second_weight_start_5]").val();
-            var second_weight_end_5 = $("input[name=second_weight_end_5]").val();
-            var second_weight_fee_5 = $("input[name=second_weight_fee_5]").val();
-            var second_weight_start_6 = $("input[name=second_weight_start_6]").val();
-            var second_weight_end_6 = $("input[name=second_weight_end_6]").val();
-            var second_weight_fee_6 = $("input[name=second_weight_fee_6]").val();
-            var second_weight_start_7 = $("input[name=second_weight_start_7]").val();
-            var second_weight_end_7 = $("input[name=second_weight_end_7]").val();
-            var second_weight_fee_7 = $("input[name=second_weight_fee_7]").val();
-            var second_weight_start_8 = $("input[name=second_weight_start_8]").val();
-            var second_weight_end_8 = $("input[name=second_weight_end_8]").val();
-            var second_weight_fee_8 = $("input[name=second_weight_fee_8]").val();
+<div class="main">
+	<div class="Warehouse" id="body_content">
+		<table>
+			<tr>
+				<th colspan="3" id="sub_info" data-name="{$sub_name}" data-id="{$sub_id}">分仓名：<a>{$sub_name}</a>
+				</th>
+			</tr>
+			<tr>
+				<td class="item" colspan="3">首重<span>（起始重量）：</span><input maxlength="3" type="text"
+																		  class="start_weight">千克<span>（Kg）</span>
+				</td>
+			</tr>
+			<input type="hidden" data-max="<?php echo count($zone); ?>" class="max_zone"/>
+			<volist name='zone' id='v'>
+				<tr class="first_zone_{$i-1}" data-id="{$v.id}" data-name="{$v.zone_name}">
+					<td>{$v.zone_name}</td>
+					<td><input maxlength="3" type="text" name="first_fee">元<span>（RMB）</span></td>
+					<td><label><input type="checkbox">设置二级标准</label>
 
+						<p>小于
+							<input maxlength="3" type="text" name="added_weight">千克（Kg），
+							<input maxlength="3" type="text" name="added_fee">元（RMB）</p></td>
+				</tr>
+			</volist>
+			<tr>
 
-            var second_lt_weight_1 = $("input[name=second_lt_weight_1]").val();
-            var second_lt_fee_1 = $("input[name=second_lt_fee_1]").val();
-            var second_lt_weight_2 = $("input[name=second_lt_weight_2]").val();
-            var second_lt_fee_2 = $("input[name=second_lt_fee_2]").val();
-            var second_lt_weight_3 = $("input[name=second_lt_weight_3]").val();
-            var second_lt_fee_3 = $("input[name=second_lt_fee_3]").val();
-            var second_lt_weight_4 = $("input[name=second_lt_weight_4]").val();
-            var second_lt_fee_4 = $("input[name=second_lt_fee_4]").val();
-            var second_lt_weight_5 = $("input[name=second_lt_weight_5]").val();
-            var second_lt_fee_5 = $("input[name=second_lt_fee_5]").val();
-            var second_lt_weight_6 = $("input[name=second_lt_weight_6]").val();
-            var second_lt_fee_6 = $("input[name=second_lt_fee_6]").val();
-            var second_lt_weight_7 = $("input[name=second_lt_weight_7]").val();
-            var second_lt_fee_7 = $("input[name=second_lt_fee_7]").val();
-            var second_lt_weight_8 = $("input[name=second_lt_weight_8]").val();
-            var second_lt_fee_8 = $("input[name=second_lt_fee_8]").val();
-            var  staple_arr = {};
-            staple_arr['store_id'] = $('#sub_store').data('id');
-            staple_arr['store_name'] = $('#sub_store').html();
-            staple_arr['first_weight'] = first_weight;
-            var  staple_ext_1 = {};
-            staple_ext_1['zone_id'] = 1;
-            staple_ext_1['zone_name'] = "一区";
-            staple_ext_1['first_weight_a'] = filter(first_weight);
-            staple_ext_1['first_fee_a'] = filter(first_weight_fee_1);
-            staple_ext_1['first_weight_b'] = filter(first_gt_weight_1);
-            staple_ext_1['first_fee_b'] = filter(first_gt_weight_fee_1);
-            staple_ext_1['second_weight_start_a'] = filter(second_weight_start_1);
-            staple_ext_1['second_weight_end'] = filter(second_weight_end_1);
-            staple_ext_1['second_fee_a'] = filter(second_weight_fee_1);
-            staple_ext_1['second_weight_start_b'] = filter(second_lt_weight_1);
-            staple_ext_1['second_fee_b'] = filter(second_lt_fee_1);
+		</table>
+		<table>
+			<tr>
+				<td class="item" colspan="3">续重<span>（如果第二级重量资费标准不填，表示之后每1Kg资费多少钱）：</span>
+					<input maxlength="3" type="text" class="second_weight">千克<span>（Kg）</span></td>
+			</tr>
+			<volist name='zone' id='v'>
+				<tr class="second_zone_{$i-1}" data-id="{$v.id}" data-name="{$v.zone_name}">
+					<td>{$v.zone_name}</td>
+					<td><input maxlength="3" type="text" name="start_weight">-<input maxlength="3" type="text"
+																					 name="end_weight">千克<span>（Kg）</span>，
+						资费<input maxlength="3" type="text" name="first_fee">元<span>（RMB）</span></td>
+					<td><label><input type="checkbox">设置二级标准</label>
 
-            var  staple_ext_2 = {};
-            staple_ext_2['zone_id'] = 2;
-            staple_ext_2['zone_name'] = "二区";
-            staple_ext_2['first_weight_a'] = filter(first_weight);
-            staple_ext_2['first_fee_a'] = filter(first_weight_fee_2);
-            staple_ext_2['first_weight_b'] = filter(first_gt_weight_2);
-            staple_ext_2['first_fee_b'] = filter(first_gt_weight_fee_2);
-            staple_ext_2['second_weight_start_a'] = filter(second_weight_start_2);
-            staple_ext_2['second_weight_end'] = filter(second_weight_end_2);
-            staple_ext_2['second_fee_a'] = filter(second_weight_fee_2);
-            staple_ext_2['second_weight_start_b'] = filter(second_lt_weight_2);
-            staple_ext_2['second_fee_b'] = filter(second_lt_fee_2);
+						<p>续重<input maxlength="3" type="text" name="added_weight">千克（Kg），
+							资费<input maxlength="3" type="text" name="added_fee">元（RMB）</p></td>
+				</tr>
+			</volist>
 
-            var  staple_ext_3 = {};
-            staple_ext_3['zone_id'] = 3;
-            staple_ext_3['zone_name'] = "三区";
-            staple_ext_3['first_weight_a'] = filter(first_weight);
-            staple_ext_3['first_fee_a'] = filter(first_weight_fee_3);
-            staple_ext_3['first_weight_b'] = filter(first_gt_weight_3);
-            staple_ext_3['first_fee_b'] = filter(first_gt_weight_fee_3);
-            staple_ext_3['second_weight_start_a'] = filter(second_weight_start_3);
-            staple_ext_3['second_weight_end'] = filter(second_weight_end_3);
-            staple_ext_3['second_fee_a'] = filter(second_weight_fee_3);
-            staple_ext_3['second_weight_start_b'] = filter(second_lt_weight_3);
-            staple_ext_3['second_fee_b'] = filter(second_lt_fee_3);
+		</table>
 
-            var  staple_ext_4 = {};
-            staple_ext_4['zone_id'] = 4;
-            staple_ext_4['zone_name'] = "四区";
-            staple_ext_4['first_weight_a'] = filter(first_weight);
-            staple_ext_4['first_fee_a'] = filter(first_weight_fee_4);
-            staple_ext_4['first_weight_b'] = filter(first_gt_weight_4);
-            staple_ext_4['first_fee_b'] = filter(first_gt_weight_fee_4);
-            staple_ext_4['second_weight_start_a'] = filter(second_weight_start_4);
-            staple_ext_4['second_weight_end'] = filter(second_weight_end_4);
-            staple_ext_4['second_fee_a'] = filter(second_weight_fee_4);
-            staple_ext_4['second_weight_start_b'] = filter(second_lt_weight_4);
-            staple_ext_4['second_fee_b'] = filter(second_lt_fee_4);
+	</div>
+	<div class="form-item" style="margin-top: 20px;text-align: center">
+		<button class="btn submit-btn" id="submit">确 定</button>
+		<button class="btn btn-return" onclick="javascript:history.back(-1);return false;">返 回</button>
+	</div>
 
-            var  staple_ext_5 = {};
-            staple_ext_5['zone_id'] = 5;
-            staple_ext_5['zone_name'] = "五区";
-            staple_ext_5['first_weight_a'] = filter(first_weight);
-            staple_ext_5['first_fee_a'] = filter(first_weight_fee_5);
-            staple_ext_5['first_weight_b'] = filter(first_gt_weight_5);
-            staple_ext_5['first_fee_b'] = filter(first_gt_weight_fee_5);
-            staple_ext_5['second_weight_start_a'] = filter(second_weight_start_5);
-            staple_ext_5['second_weight_end'] = filter(second_weight_end_5);
-            staple_ext_5['second_fee_a'] = filter(second_weight_fee_5);
-            staple_ext_5['second_weight_start_b'] = filter(second_lt_weight_5);
-            staple_ext_5['second_fee_b'] = filter(second_lt_fee_5);
-
-
-            var  staple_ext_6 = {};
-            staple_ext_6['zone_id'] = 6;
-            staple_ext_6['zone_name'] = "六区";
-            staple_ext_6['first_weight_a'] = filter(first_weight);
-            staple_ext_6['first_fee_a'] = filter(first_weight_fee_6);
-            staple_ext_6['first_weight_b'] = filter(first_gt_weight_6);
-            staple_ext_6['first_fee_b'] = filter(first_gt_weight_fee_6);
-            staple_ext_6['second_weight_start_a'] = filter(second_weight_start_6);
-            staple_ext_6['second_weight_end'] = filter(second_weight_end_6);
-            staple_ext_6['second_fee_a'] = filter(second_weight_fee_6);
-            staple_ext_6['second_weight_start_b'] = filter(second_lt_weight_6);
-            staple_ext_6['second_fee_b'] = filter(second_lt_fee_6);
-
-
-            var  staple_ext_7 = {};
-            staple_ext_7['zone_id'] = 7;
-            staple_ext_7['zone_name'] = "七区";
-            staple_ext_7['first_weight_a'] = filter(first_weight);
-            staple_ext_7['first_fee_a'] = filter(first_weight_fee_7);
-            staple_ext_7['first_weight_b'] = filter(first_gt_weight_7);
-            staple_ext_7['first_fee_b'] = filter(first_gt_weight_fee_7);
-            staple_ext_7['second_weight_start_a'] = filter(second_weight_start_7);
-            staple_ext_7['second_weight_end'] = filter(second_weight_end_7);
-            staple_ext_7['second_fee_a'] = filter(second_weight_fee_7);
-            staple_ext_7['second_weight_start_b'] = filter(second_lt_weight_7);
-            staple_ext_7['second_fee_b'] = filter(second_lt_fee_7);
-
-
-            var  staple_ext_8 = {};
-            staple_ext_8['zone_id'] = 8;
-            staple_ext_8['zone_name'] = "七区";
-            staple_ext_8['first_weight_a'] = filter(first_weight);
-            staple_ext_8['first_fee_a'] = filter(first_weight_fee_8);
-            staple_ext_8['first_weight_b'] = filter(first_gt_weight_8);
-            staple_ext_8['first_fee_b'] = filter(first_gt_weight_fee_8);
-            staple_ext_8['second_weight_start_a'] = filter(second_weight_start_8);
-            staple_ext_8['second_weight_end'] = filter(second_weight_end_8);
-            staple_ext_8['second_fee_a'] = filter(second_weight_fee_8);
-            staple_ext_8['second_weight_start_b'] = filter(second_lt_weight_8);
-            staple_ext_8['second_fee_b'] = filter(second_lt_fee_8);
-
-
-            staple_arr = JSON.stringify(staple_arr);
-            staple_ext_1 = JSON.stringify(staple_ext_1);
-            staple_ext_2 = JSON.stringify(staple_ext_2);
-            staple_ext_3 = JSON.stringify(staple_ext_3);
-            staple_ext_4 = JSON.stringify(staple_ext_4);
-            staple_ext_5 = JSON.stringify(staple_ext_5);
-            staple_ext_6 = JSON.stringify(staple_ext_6);
-            staple_ext_7 = JSON.stringify(staple_ext_7);
-            staple_ext_8 = JSON.stringify(staple_ext_8);
-            $.ajax({
-                type:'post',
-                traditional :true,
-                url:"index.php?s=/Shipping/save_rule",
-                data:{staple_arr :staple_arr ,staple_ext_1:staple_ext_1,staple_ext_2:staple_ext_2,
-					staple_ext_3:staple_ext_3,staple_ext_4:staple_ext_4,staple_ext_5:staple_ext_5,
-                    staple_ext_6:staple_ext_6,staple_ext_7:staple_ext_7,staple_ext_8:staple_ext_8
-                },
-                success:function(data){
-                   if(data == 1){
-                       alert("添加成功");
-                   }else if(data == 2){
-                       alert("同一分仓不能重复添加规则！");
-                   }else{
-                       alert("发生未知错误");
-                   }
-                }
-            });
-        }
-        function filter(params){
-            params = typeof(params) == 'undefined' ? 0 : params;
-            return params;
-        }
-
-
-
-        function show_second(obj){
-            var a = $(obj).data("id");
-            var i = $(obj).next("div").data("node");
-
-            var str = '<input type="text" class="text input-small" name="second_lt_weight_'+i+'" style="width: 30px" > (KG) 资费'
-                     +'<input type="text" class="text input-small" name="second_lt_fee_'+i+'" > (元)';
-            if(a == 1){
-                $(obj).next("div").html(str);
-                $(obj).html("-");
-                $(obj).data("id",2);
-            }else{
-                $(obj).next("div").html('');
-                $(obj).html("+");
-                $(obj).data("id",1);
-            }
-        }
-
-        function show_first(obj){
-           var a = $(obj).data("id");
-            var i = $(obj).next("div").data("node");
-            var str = ' 小于<input type="text" class="text input-small" name="first_gt_weight_'+i+'" style="width: 50px" >(KG)'
-                     +'<input type="text" style="width: 50px" class="text input-small" name="first_gt_weight_fee_'+i+'" > (元)';
-
-            if(a == 1){
-                $(obj).html("-");
-                $(obj).next("div").html(str);
-                $(obj).data("id",2);
-            }else{
-                $(obj).html("+");
-                $(obj).next("div").html('');
-                $(obj).data("id",1);
-            }
-
-        }
-        Think.setValue("pid", {$info.pid|default = 0});
-        Think.setValue("hide", {$info.hide|default = 0});
-        Think.setValue("is_dev", {$info.is_dev|default = 0});
-        //导航高亮
-        highlight_subnav('{:U('index')}');
-    </script>
+</div>
+<script type="application/javascript">
+	$(function(){
+		var zone_max = $(".max_zone").data("max");
+		if(zone_max == 0){
+			$("#body_content").html("");
+			var str = '<div style="font-size: 14;text-align: center;color: red;">请先编辑分区后再添加分区资费</div>';
+			$("#body_content").html(str);
+		}
+	});
+	$("#submit").on("click", function () {
+		var sub_name = $("#sub_info").data("name");
+		var sub_id = $("#sub_info").data("id");
+		var zone_max = $(".max_zone").data("max");
+		var start_weight = $(".start_weight").val();
+		var second_weight = $(".second_weight").val();
+		var arr = new Array();
+		for (var i = 0; i < zone_max; i++) {
+			var json_str = {};
+			var zone_id = $(".first_zone_" + i).data("id");
+			var zone_name = $(".first_zone_" + i).data("name");
+			json_str.zone_id = zone_id;
+			json_str.zone_name = zone_name;
+			json_str.first_weight_a = filter(start_weight);
+			json_str.first_fee_a = filter($(".first_zone_" + i).find("input[name=first_fee]").val());
+			json_str.first_weight_b = filter($(".first_zone_" + i).find("input[name=added_weight]").val());
+			json_str.first_fee_b = filter($(".first_zone_" + i).find("input[name=added_fee]").val());
+			json_str.second_weight_start_a = filter(second_weight);
+			json_str.second_weight_end = filter($(".second_zone_" + i).find("input[name=start_weight]").val());
+			json_str.second_fee_a = filter($(".second_zone_" + i).find("input[name=end_weight]").val());
+			json_str.second_weight_start_b = filter($(".second_zone_" + i).find("input[name=added_weight]").val());
+			json_str.second_fee_b = filter($(".second_zone_" + i).find("input[name=added_fee]").val());
+			console.log(json_str);
+			if (start_weight == 0 || second_weight == 0) {
+				confirm("首重或续重不能为空");
+				return;
+			}
+			if (json_str.zone_id == null || json_str.zone_name == null) {
+				confirm("分区名不能为空");
+				return;
+			}
+			if (json_str.first_fee_a == 0) {
+				confirm("分区首重资费不能为空");
+				return;
+			}
+			if (json_str.second_weight_start_a == 0 || json_str.second_weight_end == 0 || json_str.second_fee_a == 0) {
+				confirm("分区续重资费不能为空");
+				return;
+			}
+			arr[i] = json_str;
+		}
+		var staple_arr = JSON.stringify(arr);
+		$.ajax({
+			type       : 'post',
+			traditional: true,
+			url        : "index.php?s=/Shipping/save_rule",
+			data       : {sub_name: sub_name, sub_id: sub_id, staple_arr: staple_arr},
+			success    : function (data) {
+				if (data == 1) {
+					alert("添加成功");
+				} else if (data == 2) {
+					alert("同一分仓不能重复添加规则！");
+				} else {
+					alert("发生未知错误");
+				}
+			}
+		});
+	});
+	function filter(params) {
+		params = typeof(params) == 'undefined' ? 0 : params;
+		return params;
+	}
+</script>
 </block>

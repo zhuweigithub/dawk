@@ -57,7 +57,7 @@ class ExcelController extends AdminController
 			$uploads          = "Public/Uploads/";
 			$upload           = new \Think\Upload(); // 实例化上传类
 			$upload->maxSize  = 52428800; // 设置附件上传大小
-			$upload->exts     = array('xlsx', 'xls', 'txt'); // 设置附件上传类型
+			$upload->exts     = array( 'txt'); // 设置附件上传类型
 			$upload->rootPath = $uploads; // 设置附件上传根目录
 			$upload->subName  = array('date', 'Ymd');
 			// 上传单个文件
@@ -194,25 +194,33 @@ class ExcelController extends AdminController
 					$if_run = false;
 					$param  = $this->insertReport($report);
 				}
-				$arr[] = array(
-					"in_out_date"    => $dataSet[1],
-					"customer_code"  => $dataSet[2],
-					"customer_name"  => $dataSet[3],
-					"sub_store"      => $dataSet[4],
-					"express_number" => $dataSet[5],
-					"send_province"  => $dataSet[6],
-					"send_city"      => $dataSet[7] ? $dataSet[7] : "",
-					"weight"         => $dataSet[8],
-					"post_money"     => $dataSet[9],
-					"area_id"        => $param['org_id'],
-					"oper_name"      => session('user_auth')['uid']
-				);
+				try{
+					$arr[] = array(
+						"in_out_date"    => $dataSet[1],
+						"customer_code"  => $dataSet[2],
+						"customer_name"  => $dataSet[3],
+						"sub_store"      => $dataSet[4],
+						"express_number" => $dataSet[5],
+						"send_province"  => $dataSet[6],
+						"send_city"      => $dataSet[7] ? $dataSet[7] : "",
+						"weight"         => $dataSet[8],
+						"post_money"     => $dataSet[9],
+						"area_id"        => $param['org_id'],
+						"oper_name"      => session('user_auth')['uid']
+					);
 
-				unset($dataSet);
-				if (count($arr) >= 500 || $row == $highestRow - 2) {
-					$this->saveData($db, $arr, $filename);
-					unset($arr);
+					unset($dataSet);
+					if (count($arr) >= 500 || $row == $highestRow - 2) {
+						$this->saveData($db, $arr, $filename);
+						unset($arr);
+					}
+
+				}catch (Exception $e){
+					$db->rollback();
+					@unlink($filename);
+					$this->error("发生未知错误,数据回滚,详情：" . $e, '', 5);
 				}
+
 			}
 		}
 
@@ -297,6 +305,9 @@ class ExcelController extends AdminController
 		$params['report_title'] = $report[0][0];
 		$params['report_time']  = $report[1][0];
 		$params['report_org']   = $report[2][0];
+		$arr_org = explode("大宗客户:" , $params['report_time']);
+
+		$params['customs_name'] = $arr_org[1];
 		$regex                  = "'\d{4}-\d{1,2}-\d{1,2}'is";
 		preg_match_all($regex, $params['report_time'], $matches);
 		//dump($matches);
@@ -313,11 +324,15 @@ class ExcelController extends AdminController
 
 		$data['end_time'] = array("egt", $params['start_time']);
 		$data['org_id']   = $params['org_id'];
+		$data['customs_name']   = $params['customs_name'];
+		//var_dump($data);exit;
 		$result           = $reportDb->where($data)->find();
-		if (count($result) <= 0) {
+		var_dump($result);
+		var_dump($params);
+		if (count($result) <= 0 && $params != null) {
 			$reportDb->add($params);
 		} else {
-			$this->error("数据不能重复导入，请检查！");
+			$this->error("数据导入错误或数据不能重复导入，请检查！");
 			exit;
 		}
 		return $params;
