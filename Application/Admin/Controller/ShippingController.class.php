@@ -274,6 +274,8 @@ class ShippingController extends AdminController
 		$param['store_id'] = $sub_id;
 		$result            = M("Zone")->where($param)->select();
 		$province          = M("Province")->select();
+
+
 		if (count($result) > 0) {
 			for ($i = 0; $i < count($result); $i++) {
 				$provinceIds = explode(',', $result[$i]['province_ids']);
@@ -285,8 +287,13 @@ class ShippingController extends AdminController
 						}
 					}
 				}
+                $sql = "select * from t_staple_rule a  left join t_staple_rule_ext  b on a.id = b.staple_id where a.store_id = ".$sub_id." and b.zone_id = ".$result[$i]['id'];
+                $zone_value = M()->query($sql);
+                $result[$i]['zone_value'] = $zone_value[0];
 			}
+
 		}
+
 //dump($result);exit;
 		//$result = M("Province")->field("id,name,zone_name,zone_id")->order("zone_id")->select();
 		$this->assign("result", $province);
@@ -334,6 +341,7 @@ class ShippingController extends AdminController
 			$arr['id'] = $result['id'];
 			$id        = $result['id'];
 			M("Staple_rule")->save($arr);
+            $id = $result['id'];
 		} else {
 			$id = M("Staple_rule")->add($arr);
 		}

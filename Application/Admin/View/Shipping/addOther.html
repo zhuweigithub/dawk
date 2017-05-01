@@ -102,19 +102,24 @@
 			</tr>
 			<tr>
 				<td class="item" colspan="3">首重<span>（起始重量）：</span><input maxlength="3" type="text"
-																		  class="start_weight">千克<span>（Kg）</span>
+																		  class="start_weight" value="{$zone[0]['zone_value']['first_weight']}">千克<span>（Kg）</span>
 				</td>
 			</tr>
 			<input type="hidden" data-max="<?php echo count($zone); ?>" class="max_zone"/>
 			<volist name='zone' id='v'>
 				<tr class="first_zone_{$i-1}" data-id="{$v.id}" data-name="{$v.zone_name}">
 					<td>{$v.zone_name}</td>
-					<td><input maxlength="3" type="text" name="first_fee">元<span>（RMB）</span></td>
-					<td><label><input type="checkbox">设置二级标准</label>
-
+					<td><input maxlength="3" type="text" name="first_fee" value="{$v.zone_value.first_fee_a}">元<span>（RMB）</span></td>
+					<td><label>
+                        <if condition="$v.zone_value.first_weight_b  lt 0 ">
+                            <input type="checkbox" checked>设置二级标准
+                            <else />
+                            <input type="checkbox">设置二级标准
+                        </if>
+                        </label>
 						<p>小于
-							<input maxlength="3" type="text" name="added_weight">千克（Kg），
-							<input maxlength="3" type="text" name="added_fee">元（RMB）</p></td>
+							<input maxlength="3" type="text" name="added_weight" value="{$v.zone_value.first_weight_b}">千克（Kg），
+							<input maxlength="3" type="text" name="added_fee" value="{$v.zone_value.first_fee_b}">元（RMB）</p></td>
 				</tr>
 			</volist>
 			<tr>
@@ -122,19 +127,24 @@
 		</table>
 		<table>
 			<tr>
-				<td class="item" colspan="3">续重<span>（如果第二级重量资费标准不填，表示之后每1Kg资费多少钱）：</span>
-					<input maxlength="3" type="text" class="second_weight">千克<span>（Kg）</span></td>
+				<td class="item" colspan="3">续重<span>（如果第二级重量资费标准不填，表示之后每1Kg资费多少钱）</span></td>
 			</tr>
 			<volist name='zone' id='v'>
 				<tr class="second_zone_{$i-1}" data-id="{$v.id}" data-name="{$v.zone_name}">
 					<td>{$v.zone_name}</td>
-					<td><input maxlength="3" type="text" name="start_weight">-<input maxlength="3" type="text"
-																					 name="end_weight">千克<span>（Kg）</span>，
-						资费<input maxlength="3" type="text" name="first_fee">元<span>（RMB）</span></td>
-					<td><label><input type="checkbox">设置二级标准</label>
+					<td><input maxlength="3" type="text" name="start_weight" value="{$v.zone_value.second_weight_start_a}">-<input maxlength="3" type="text"
+																					 name="end_weight" value="{$v.zone_value.second_weight_end}">千克<span>（Kg）</span>，
+						资费<input maxlength="3" type="text" name="first_fee" value="{$v.zone_value.second_fee_a}" >元<span>（RMB）</span></td>
+					<td><label>
+                        <if condition="$v.zone_value.second_weight_start_b  lt 0 ">
+                            <input type="checkbox" checked>设置二级标准
+                            <else />
+                            <input type="checkbox">设置二级标准
+                        </if>
+                        </label>
 
-						<p>续重<input maxlength="3" type="text" name="added_weight">千克（Kg），
-							资费<input maxlength="3" type="text" name="added_fee">元（RMB）</p></td>
+						<p>续重<input maxlength="3" type="text" name="added_weight" value="{$v.zone_value.second_weight_start_b}">千克（Kg），
+							资费<input maxlength="3" type="text" name="added_fee"  value="{$v.zone_value.second_fee_b}">元（RMB）</p></td>
 				</tr>
 			</volist>
 
@@ -161,7 +171,7 @@
 		var sub_id = $("#sub_info").data("id");
 		var zone_max = $(".max_zone").data("max");
 		var start_weight = $(".start_weight").val();
-		var second_weight = $(".second_weight").val();
+		//var second_weight = $(".second_weight").val();
 		var arr = new Array();
 		for (var i = 0; i < zone_max; i++) {
 			var json_str = {};
@@ -173,13 +183,13 @@
 			json_str.first_fee_a = filter($(".first_zone_" + i).find("input[name=first_fee]").val());
 			json_str.first_weight_b = filter($(".first_zone_" + i).find("input[name=added_weight]").val());
 			json_str.first_fee_b = filter($(".first_zone_" + i).find("input[name=added_fee]").val());
-			json_str.second_weight_start_a = filter(second_weight);
-			json_str.second_weight_end = filter($(".second_zone_" + i).find("input[name=start_weight]").val());
-			json_str.second_fee_a = filter($(".second_zone_" + i).find("input[name=end_weight]").val());
+			json_str.second_weight_start_a = filter($(".second_zone_" + i).find("input[name=start_weight]").val());
+			json_str.second_weight_end = filter($(".second_zone_" + i).find("input[name=end_weight]").val());
+			json_str.second_fee_a = filter($(".second_zone_" + i).find("input[name=first_fee]").val());
 			json_str.second_weight_start_b = filter($(".second_zone_" + i).find("input[name=added_weight]").val());
 			json_str.second_fee_b = filter($(".second_zone_" + i).find("input[name=added_fee]").val());
 			console.log(json_str);
-			if (start_weight == 0 || second_weight == 0) {
+			if (start_weight == 0) {
 				confirm("首重或续重不能为空");
 				return;
 			}
@@ -205,11 +215,11 @@
 			data       : {sub_name: sub_name, sub_id: sub_id, staple_arr: staple_arr},
 			success    : function (data) {
 				if (data == 1) {
-					alert("添加成功");
+                    confirm("添加成功");
 				} else if (data == 2) {
-					alert("同一分仓不能重复添加规则！");
+                    confirm("同一分仓不能重复添加规则！");
 				} else {
-					alert("发生未知错误");
+                    confirm("发生未知错误");
 				}
 			}
 		});
