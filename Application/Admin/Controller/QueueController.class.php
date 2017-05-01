@@ -160,10 +160,21 @@ class QueueController extends Controller
 		}else if ($type == 2) {
 
             $param['store_name'] = $sub_store;
-            $staple_rule = M("Staple_rule")->field("id")->where($param)->find();
+            $staple_rule = M("Staple_rule")->field("id,store_id")->where($param)->find();
 
+            $zone_params['store_id'] = $staple_rule['store_id'];
+            $zone_rule = M("zone")->find('id,province_ids')->where($zone_params)->select();
+            $zone_rule_id = 0;
+            for($i = 0; $i<count($zone_rule) ; $i++){
+                $provinceIds = explode(',', $zone_rule[$i]['province_ids']);
+                for ($j = 0; $j < count($provinceIds) - 1; $j++) {
+                    if ($pro['id'] == $provinceIds[$j]) {
+                        $zone_rule_id = $zone_rule[$i]['id'];
+                    }
+                }
+            }
             $params['staple_id'] = $staple_rule['id'];
-            $params['zone_id'] = $pro['zone_id'];
+            $params['zone_id'] = $zone_rule_id;
             $staple_rule_ext = M("Staple_rule_ext")->where($params)->find();
             if($staple_rule_ext['first_weight_a'] >= $weight){
                 if($staple_rule_ext['first_weight_b'] > 0 && $staple_rule_ext['first_weight_b'] >= $weight){
