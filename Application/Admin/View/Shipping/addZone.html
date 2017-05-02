@@ -159,9 +159,9 @@ Account.submit_ajax = function(){
      max_zone = zone.length;
     for(var i =0;i<zone.length ;i++){
         if(zone_id == zone[i]['id']){
-            str += '&nbsp;&nbsp;&nbsp;&nbsp;<input type="radio" data-province="'+province_id+'" data-id="'+ zone[i]["id"]+'" name="zone'+province_id+'" checked value="'+province_id+'" />'+zone[i]["zone_name"];
+            str += '&nbsp;&nbsp;&nbsp;&nbsp;<input type="radio" data-province="'+province_id+'" data-id="'+ (i+1) +'" name="zone'+province_id+'" checked value="'+province_id+'" />'+zone[i]["zone_name"];
         }else{
-            str += '&nbsp;&nbsp;&nbsp;&nbsp;<input type="radio" data-province="'+province_id+'" data-id="'+ zone[i]["id"]+'" name="zone'+province_id+'" value="'+province_id+'"/>'+zone[i]["zone_name"];
+            str += '&nbsp;&nbsp;&nbsp;&nbsp;<input type="radio" data-province="'+province_id+'" data-id="'+ (i+1)+'" name="zone'+province_id+'" value="'+province_id+'"/>'+zone[i]["zone_name"];
         }
     }
     return str;

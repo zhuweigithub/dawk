@@ -189,7 +189,7 @@
 			json_str.second_weight_start_b = filter($(".second_zone_" + i).find("input[name=added_weight]").val());
 			json_str.second_fee_b = filter($(".second_zone_" + i).find("input[name=added_fee]").val());
 			console.log(json_str);
-			if (start_weight == 0) {
+			if (start_weight == 0 ) {
 				confirm("首重或续重不能为空");
 				return;
 			}
