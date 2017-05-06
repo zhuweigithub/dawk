@@ -12,6 +12,7 @@ class QueueController extends Controller
     }
 	public function runQueue()
 	{
+
         set_time_limit(0);
         $param['config_name'] = "MONTHLY_COUNT_DATA";
         $rule = M("Config_system")->where($param)->find();
@@ -20,6 +21,7 @@ class QueueController extends Controller
         //todo 当前时间为配置时间则运行处理队列
         if($today == $rule['config_value']){
 		for($i = 1;$i < 5 ;$i++ ){
+
 		$month = date("Y-m",strtotime("-" . $i . "months",strtotime(date("Y-m", time()))));
 		$list  = M("Send_month")->where("month= '" . $month . "'")->find();
 
@@ -35,9 +37,12 @@ class QueueController extends Controller
 				$this->sendCountByDateQueue($month); //生成每月每个客户发单数总计
 			} else {
 				\Think\Log::record(time() . '===Queue->runQueue'.$month.'队列已经跑过了');
+                return;
 			}
 		}
-       }
+       }else{
+            return;
+        }
 	}
 
 	/*  1.统计每个客户上月的订单数  方法
@@ -81,22 +86,28 @@ class QueueController extends Controller
     public function traverseDetail($month)
 	{
         set_time_limit(0);
+       // echo $month;
 		$db       = M();
 		$detailDb = M("Send_detail");
-		$sql      = "select id , sub_store,send_province,send_city,weight,post_money
-                from t_send_detail where in_out_date like '" . $month . "%'";
-		$result   = $db->query($sql);
-
-		foreach ($result as $key => $val) {
-			$type      = $this->getRule($month, $val['sub_store']);
-			$balancing = $this->getBalancing($val['send_province'], $val['weight'], $type ,$val['sub_store']);
-			$arr       = array(
-				"id"        => $val['id'],
-				"balancing" => $balancing
-			);
-			$detailDb->save($arr);
-		}
-
+        $sqls      = "select count(1) as total from t_send_detail where in_out_date like '" . $month . "%'";
+        $count     = $db->query($sqls);
+        $pageNum   = 10000;
+        $pageTotal = ceil($count[0]['total']/$pageNum);
+        for($i = 0 ;$i< $pageTotal ;$i++){
+            $start = $i*$pageNum;
+            $sql      = "select id , sub_store,send_province,send_city,weight,post_money
+                from t_send_detail where in_out_date like '" . $month . "%' limit ".$start." ,".$pageNum;
+            $result   = $db->query($sql);
+            foreach ($result as $key => $val) {
+                $type      = $this->getRule($month, $val['sub_store']);
+                $balancing = $this->getBalancing($val['send_province'], $val['weight'], $type ,$val['sub_store']);
+                $arr       = array(
+                    "id"        => $val['id'],
+                    "balancing" => $balancing
+                );
+                $detailDb->save($arr);
+            }
+        }
 	}
 
 	private function getRule($month, $sub_store)
@@ -159,13 +170,15 @@ class QueueController extends Controller
 
 		}else if ($type == 2) {
 
-            $param['store_name'] = $sub_store;
-            $staple_rule = M("Staple_rule")->field("id,store_id")->where($param)->find();
-
+            $param_two['store_name'] = $sub_store;
+            $staple_rule = M("Staple_rule")->field("id,store_id")->where($param_two)->find();
             $zone_params['store_id'] = $staple_rule['store_id'];
-            $zone_rule = M("zone")->find('id,province_ids')->where($zone_params)->select();
+            $zone_rule = M("zone")->field('id,province_ids')->where($zone_params)->select();
             $zone_rule_id = 0;
             for($i = 0; $i<count($zone_rule) ; $i++){
+                if( $zone_rule[$i]['province_ids'] == null ){
+                    continue;
+                }
                 $provinceIds = explode(',', $zone_rule[$i]['province_ids']);
                 for ($j = 0; $j < count($provinceIds) - 1; $j++) {
                     if ($pro['id'] == $provinceIds[$j]) {
