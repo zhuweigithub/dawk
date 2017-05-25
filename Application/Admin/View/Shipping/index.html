@@ -25,7 +25,7 @@
             <thead>
 
             <tr style="border:1px solid #fff">
-                <th width="80" rowspan="2">CODE</th>
+                <th width="80" rowspan="2">ID</th>
                 <th width="80" rowspan="2">省份（简称）</th>
                 <th width="150" rowspan="2">省份全名</th>
                 <th width="240" colspan="3" style="text-align: center">标准一</th>
@@ -43,7 +43,7 @@
             <tbody>
             <volist name="result" id="data">
             <tr class="show-input_{$data.id}">
-                <td>{$data.zone_name}</td>
+                <td style="text-align: center">{$data.id}</td>
                 <td>{$data.short_name}</td>
                 <td>{$data.name}</td>
 
